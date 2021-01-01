@@ -23,20 +23,20 @@
 
 
 #Dependencies - The following packages must be installed. Please see our publication to see what 
-#versions I used, if struggling. 
-library("reticulate")
-reticulate::use_condaenv("hdf5=1.10.5", required = TRUE) # This might not be necessary for you but it helped me. 
-library("EBImage")
-library("fftwtools")
-library("keras")
-library("tensorflow")
-library("kerasR")
-library("mcparallelDo")
-library("cowplot")
-library("reshape2")
-library("ggplot2")
-library("rBayesianOptimization")
-library("zoo")
+#versions I used, if struggling.  
+library("reticulate")  
+reticulate::use_condaenv("hdf5=1.10.5", required = TRUE) # This might not be necessary for you but it helped me.  
+library("EBImage")  
+library("fftwtools")  
+library("keras")  
+library("tensorflow")  
+library("kerasR")  
+library("mcparallelDo")  
+library("cowplot")  
+library("reshape2")  
+library("ggplot2")  
+library("rBayesianOptimization")  
+library("zoo")  
 
 
 # Preparation of cleavage windows
