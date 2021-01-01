@@ -1,6 +1,6 @@
 # smartPARE
 
-# This is an R package for sRNA cleavage confirmation on degradome data, that can be applied on sRNA cleavage predictions.
+This is an R package for sRNA cleavage confirmation on degradome data, that can be applied on sRNA cleavage predictions.
 # I used PAREsnip2 which is to date the most efficient miRNA cleavage analysis tool according to their paper 
 # (Thody et al. 2018). This extension module was developed also to identify other sRNA cleavages because 
 # our data was rich on noise, possibly caused by degraded mRNA.
