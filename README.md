@@ -91,7 +91,7 @@ cleavageWindows(dirO = paste0("pathOut/"),
 
 #2  
 #Create the training dataset  
-homePath1 = "keras/3categories/1_21_5_2/"  
+homePath1 = "homePath/"  
 kerasCreateDataset_2d(homePath = homePath1 ,pixels = 28)  
 
 #3  
