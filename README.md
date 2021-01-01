@@ -110,7 +110,6 @@ tuneCLR(batch_size2 = 64,
 #The algorithm is a bit shaky for non-smooth curves  
 #Learning_rate_l should be at minimum of the curve and Learning_rate_h at max  
 #Learning_rate_l = 5e-04 #1e-02  
-#Learning_rate_h = 0.03  
 #Learning_rate_h = 1*10^-3  
 
 rm1 <- 20  
@@ -192,7 +191,8 @@ rootExt <- paste0(homePath1,extDirs)
 #Examine the cleavages of your directories  
 examineCleavages(examinePath = rootExt, model = model,pixels = pixs)  
 
-#4 Constructs a list of the true cleavages that can be  
-# used to filer away false cleavages from the original dataset   
+#4 
+#Constructs a list of the true cleavages that can be  
+#used to filer away false cleavages from the original dataset    
 ###important that all final dirs end with _mpd ex athA_mpd or gpotInPinf_mpd  
 kerasListTrue(pathToTrue = homePath1)  
