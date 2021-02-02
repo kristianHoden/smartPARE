@@ -62,7 +62,7 @@ library("gridExtra")
 #Also in makeWindowPictureFunc you can find the function readGFF which is a basic function to import your GFF.  
 #IMPORTANT!!! is that your gffTrans has a 10th column with your the transcript ID. Often this must be  
 #extracted from the 9th column (V9). However, most GFF files I've been exposed to are different.  
-#In the attached function extendGffTrans you can see how this was achieved from the Jupe dataset (Jupe et al. 2013)  
+#In the attached function extendGffTrans you can see how this was achieved from the Jupe dataset (Jupé et al. 2013)  
 #I was using.  
 #gffTrans - a dataframe of your imported gff with V10 = transcript ID see  for example extendGffTrans  
 #in makeWindowPictureFunc for example  
