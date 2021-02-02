@@ -15,28 +15,28 @@
 #We hope to help you to make analysis of your degradome more efficient. Please site our article if you are using the package.  
 
 #Dependencies - The following packages are required: 
-reticulate,
-EBImage,
-fftwtools,
-keras,
-tensorflow,
-kerasR,
-mcparallelDo,
-cowplot,
-reshape2,
-ggplot2,
-rBayesianOptimization,
-zoo,
-GenomicRanges,
-GenomicAlignments,
-Rsamtools, 
-gridExtra,
-data.table, 
-reshape2,
-generics, 
-IRanges,
-BiocGenerics, 
-magrittr, 
+# reticulate,
+# EBImage,
+# fftwtools,
+# keras,
+# tensorflow,
+# kerasR,
+# mcparallelDo,
+# cowplot,
+# reshape2,
+# ggplot2,
+# rBayesianOptimization,
+# zoo,
+# GenomicRanges,
+# GenomicAlignments,
+# Rsamtools, 
+# gridExtra,
+# data.table, 
+# reshape2,
+# generics, 
+# IRanges, 
+# BiocGenerics, 
+# magrittr, 
 
 #Installing keras can be a challange depending on your system. My system was complaining about missing the hdf5=1.10.5 version why the following steps worked for me.   
 library(reticulate)  
@@ -84,7 +84,7 @@ cleavageWindows(dirO = paste0("pathOut/"),
 
 #2  
 #Create the training dataset  
-homePath1 = "data/example/"  
+homePath1 = "example/"  
 kerasCreateDataset_2d(homePath = homePath1 ,pixels = 28)  
 
 #3  
@@ -165,7 +165,7 @@ which(bayes_ucb$Pred == max(bayes_ucb$Pred))
 #then accuracy (0-1), then loss etc  
 
 #a if you designed your own model  
-model <- keras::load_model_hdf5("data/example/bayesmodels/modelNumberAndContinousName.h5")  
+model <- keras::load_model_hdf5("example/bayesmodels/modelNumberAndContinousName.h5")#  
 model %>% summary()  
 
 #b if you are using our model  
