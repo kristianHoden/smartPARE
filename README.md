@@ -29,8 +29,7 @@
         zoo,
         gridExtra
 
-#Installing keras can be a challange depending on your system
-#My system was complaining about missing the hdf5=1.10.5 version why the following steps worked for me.   
+#Installing keras can be a challange depending on your system. My system was complaining about missing the hdf5=1.10.5 version why the following steps worked for me.   
 library(reticulate)  
 reticulate::conda_install(c("hdf5=1.10.5"), pip = TRUE)  
 reticulate::use_condaenv("hdf5=1.10.5", required = TRUE)  
