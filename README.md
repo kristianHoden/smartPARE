@@ -27,18 +27,18 @@
         ggplot2,
         rBayesianOptimization,
         zoo,
-        gridExtra,
+        gridExtra
 
 #Installing keras can be a challange depending on your system
-#My system was complaining about missing the hdf5=1.10.5 version why the following steps worked for me. 
-library(reticulate)
-reticulate::conda_install(c("hdf5=1.10.5"), pip = TRUE)
-reticulate::use_condaenv("hdf5=1.10.5", required = TRUE) 
-install.packages("tensorflow")
-install.packages("keras")
-install.packages("kerasR")
-library("keras")
-install_keras()
+#My system was complaining about missing the hdf5=1.10.5 version why the following steps worked for me.   
+library(reticulate)  
+reticulate::conda_install(c("hdf5=1.10.5"), pip = TRUE)  
+reticulate::use_condaenv("hdf5=1.10.5", required = TRUE)  
+install.packages("tensorflow")  
+install.packages("keras")  
+install.packages("kerasR")  
+library("keras")  
+install_keras()  
 
 #Set up smartPare:  
 #install_github('smartPare','github_username')  
