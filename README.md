@@ -29,17 +29,14 @@ rBayesianOptimization,
 zoo,
 GenomicRanges,
 GenomicAlignments,
-Rsamtools 
-gridExtra
-data.table 
-reshape2 
-generics 
-IRanges 
-BiocGenerics 
-magrittr 
-
-library(reticulate)  
-reticulate::use_condaenv("hdf5=1.10.5", required = TRUE)  
+Rsamtools, 
+gridExtra,
+data.table, 
+reshape2,
+generics, 
+IRanges,
+BiocGenerics, 
+magrittr, 
 
 #Installing keras can be a challange depending on your system. My system was complaining about missing the hdf5=1.10.5 version why the following steps worked for me.   
 library(reticulate)  
