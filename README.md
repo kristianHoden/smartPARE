@@ -69,6 +69,10 @@ library("gridExtra")
 #aliFilesPattern1 - regular expression defining the pattern of your first degradome library  
 #aliFilesPattern2 - regular expression defining the pattern of your second degradome library  
 #dirO - output path  
+#savePics - T if you want the files to be saved in your dirO, F if just want them to be plotted in your RStudio browser. Default = T  
+#jpegWidHei - c(Width,Height), Width and height of saved jpeg images. Default = c(480,480)
+#qual = Quality of your saved images. Default = 75 
+#pz - Pointsize of saved images. Default = 12
 
 cleavageWindows(dirO = paste0("pathOut/"),  
                  cleavageData = cleavageDataDataset,  
@@ -77,7 +81,11 @@ cleavageWindows(dirO = paste0("pathOut/"),
                  aliFilesPattern2 = "pattern2.sorted.bam$",  
                  ylim1 = 5,  
                  edgesExtend1 = c(1,21),  
-                 gffTrans = gffTrans  
+                 gffTrans = gffTrans,
+                 savePics = T,
+                 jpegWidHei = c(480,480),
+                 qual = 75,
+                 pz = 12
 )  
 
 # Cleavage picture training - If you deside to create your own model, otherwise skip this part  
