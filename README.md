@@ -23,7 +23,7 @@
 #Dependencies - The following packages must be installed. Please see our publication to see what  
 #versions I used, if struggling.  
 library("reticulate")  
-reticulate::use_condaenv("hdf5=1.10.5", required = TRUE) # This might not be necessary for you but it helped me.  
+reticulate::use_condaenv("hdf5=1.10.5", required = TRUE) # This might not be necessary for you but setting up a condaenv with "hdf5=1.10.5" helped me install keras.  
 library("EBImage")  
 library("fftwtools")  
 library("keras")  
@@ -35,7 +35,7 @@ library("reshape2")
 library("ggplot2")  
 library("rBayesianOptimization")  
 library("zoo")  
-
+library("gridExtra")
 
 # Preparation of cleavage windows
 #This is just an example for how the windows aka cleavage pictures might be created.  
