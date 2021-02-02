@@ -14,20 +14,32 @@
 
 #We hope to help you to make analysis of your degradome more efficient. Please site our article if you are using the package.  
 
-#Dependencies - The following packages must be installed: 
-        reticulate,
-        EBImage,
-        fftwtools,
-        keras,
-        tensorflow,
-        kerasR,
-        mcparallelDo,
-        cowplot,
-        reshape2,
-        ggplot2,
-        rBayesianOptimization,
-        zoo,
-        gridExtra
+#Dependencies - The following packages are required: 
+reticulate,
+EBImage,
+fftwtools,
+keras,
+tensorflow,
+kerasR,
+mcparallelDo,
+cowplot,
+reshape2,
+ggplot2,
+rBayesianOptimization,
+zoo,
+GenomicRanges,
+GenomicAlignments,
+Rsamtools 
+gridExtra
+data.table 
+reshape2 
+generics 
+IRanges 
+BiocGenerics 
+magrittr 
+
+library(reticulate)  
+reticulate::use_condaenv("hdf5=1.10.5", required = TRUE)  
 
 #Installing keras can be a challange depending on your system. My system was complaining about missing the hdf5=1.10.5 version why the following steps worked for me.   
 library(reticulate)  
@@ -51,31 +63,31 @@ install_keras()
 #To adopt this script to your data as other pictures might not be recognized by the model.  
 
 cleavageWindows(dirO = paste0("pathOut/"),  
-                 cleavageData = cleavageDataDataset,  
-                 aliFilesPath = "path/bamTranscriptome/",  
-                 aliFilesPattern1 = "pattern1.sorted.bam$",  
-                 aliFilesPattern2 = "pattern2.sorted.bam$",  
-                 ylim1 = 5,  
-                 edgesExtend1 = c(1,21),  
-                 gffTrans = gffTrans,
-                 savePics = T,
-                 jpegWidHei = c(480,480),
-                 qual = 75,
-                 pz = 12
+                cleavageData = cleavageDataDataset,  
+                aliFilesPath = "path/bamTranscriptome/",  
+                aliFilesPattern1 = "pattern1.sorted.bam$",  
+                aliFilesPattern2 = "pattern2.sorted.bam$",  
+                ylim1 = 5,  
+                edgesExtend1 = c(1,21),  
+                gffTrans = gffTrans,
+                savePics = T,
+                jpegWidHei = c(480,480),
+                qual = 75,
+                pz = 12
 )  
 
-# Cleavage picture training - If you deside to create your own model, otherwise skip this part  
- 
+# Cleavage window training - If you deside to create your own model, otherwise skip this part  
+
 #1.  
 #Manually put pictures of true cleavages in subdirs to  
 #homePath/train/goodUp (true cleavages on 5' strand)  
 #homePath/train/goodDown (true cleavages on 3' strand)  
 #homePath/train/bad (false cleavages)  
-#make sure to get as much variation in teh pictures as possible  
+#make sure to get as much variation in the pictures as possible  
 
 #2  
 #Create the training dataset  
-homePath1 = "homePath/"  
+homePath1 = "data/example/"  
 kerasCreateDataset_2d(homePath = homePath1 ,pixels = 28)  
 
 #3  
@@ -83,7 +95,7 @@ kerasCreateDataset_2d(homePath = homePath1 ,pixels = 28)
 tuneCLR(batch_size2 = 64,  
         epochs_find_LR = 20,  
         lr_max = 0.1,  
-        optimizer2 = optimizer_sgd(lr=lr_max, decay=0), #optimizer_rmsprop(lr=lr_max, decay=0),  
+        optimizer2 = keras::optimizer_sgd(lr=lr_max, decay=0), #optimizer_rmsprop(lr=lr_max, decay=0),  
         validation_split2 = 0.2,  
         rollmeanSplit = 3  
 )  
@@ -97,8 +109,8 @@ tuneCLR(batch_size2 = 64,
 #Learning_rate_h = 1*10^-3  
 
 rm1 <- 20  
-plot(rollmean(accDforig$lr, rm1),  
-     rollmean(accDforig$acc, rm1),  
+plot(zoo::rollmean(accDforig$lr, rm1),  
+     zoo::rollmean(accDforig$acc, rm1),  
      log="x", type="l", pch=16, cex=0.3,  
      xlab="learning rate", ylab="accuracy: rollmean(100)")  
 abline(v=Learning_rate_l, col="blue")  
@@ -134,11 +146,11 @@ search_grid <- data.frame(unitPower2 = c(1,2),
 #for instance the pathOut - dir of your output  
 count1 <-1  
 bayes_ucb <-  
-  BayesianOptimization(FUN = runCLR,   
+  rBayesianOptimization::BayesianOptimization(FUN = runCLR,   
                        bounds = search_bound,   
                        init_grid_dt = search_grid,   
                        init_points = 0,  
-                       n_iter = 100,  
+                       n_iter = 3,  
                        acq =  "ucb" #"ei" "ucb"  
   )  
 
@@ -156,15 +168,15 @@ which(bayes_ucb$Pred == max(bayes_ucb$Pred))
 #then accuracy (0-1), then loss etc  
 
 #a if you designed your own model  
-model <- load_model_hdf5("keras/3categories/bayesmodels/modelNumberAndContinousName.h5")  
+model <- keras::load_model_hdf5("data/example/bayesmodels/modelNumberAndContinousName.h5")  
 model %>% summary()  
 
 #b if you are using our model  
-model <- load_model_hdf5("CNNmodel.h5")  
+model <- keras::load_model_hdf5("data/model/CNNmodel.h5")  
 model %>% summary()  
 
 #2
-#Define your directories you want to examine  
+#Define the directories you want to examine  
 extDirs <- unique(dirname(list.files(homePath1,rec=T)))  
 #exclude the training dirs  
 extDirs[-which(startsWith(prefix = "train",extDirs))]  
