@@ -8,7 +8,7 @@ tuneCLR(
   batch_size2 = 64,
   epochs_find_LR = 20,
   lr_max = 0.1,
-  optimizer2 = optimizer_rmsprop(lr = lr_max, decay = 0),
+  optimizer2 = keras::optimizer_rmsprop(lr = lr_max, decay = 0),
   validation_split2 = 0.2,
   rollmeanSplit = 3
 )
@@ -32,7 +32,7 @@ The function is run to find the minimum and maximum values of the cyclical learn
 \examples{
 tuneCLR(batch_size2 = 64,
 epochs_find_LR = 20,
-lr_max = 0.1, 
+lr_max = 0.1,
 optimizer2 = optimizer_rmsprop(lr=lr_max, decay=0),
 validation_split2 =0.2,
 rollmeanSplit = 3

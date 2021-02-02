@@ -34,9 +34,9 @@ examineCleavages(
 Uses the trained model to assess if the images are true or false cleavages
 }
 \examples{
-examineCleavages(examinePath, 
+examineCleavages(examinePath,
 model,
-hitsNrs = c(1,2), 
+hitsNrs = c(1,2),
 falseNrs = c(0),
 pixels = 28,
 picsPerloop = 100,

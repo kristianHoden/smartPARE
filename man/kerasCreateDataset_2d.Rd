@@ -4,7 +4,7 @@
 \alias{kerasCreateDataset_2d}
 \title{Function to import data to train the model}
 \usage{
-kerasCreateDataset_2d(homePath = "keras/3categories/", pixels = 28)
+kerasCreateDataset_2d(homePath = "data/example/", pixels = 28)
 }
 \arguments{
 \item{homePath}{Path to your working directory}
@@ -17,6 +17,6 @@ The pictures must be sorted so that a category of pics is in each subdir of the 
 Ex, all cat pics in a sub dir called cats and all dog pics in a subdir called dogs.
 }
 \examples{
-kerasCreateDataset_2d <- function(homePath = "keras/3categories/", pixels = 28)
+kerasCreateDataset_2d(homePath = "keras/3categories/", pixels = 28)
 }
 \keyword{kerasCreateDataset}

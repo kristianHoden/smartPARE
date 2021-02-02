@@ -5,7 +5,7 @@
 \title{Optimizes the cyclical learning rate (CLR) based convolutional neural network (CNN) model}
 \usage{
 runCLR(
-  optimizer2 = optimizer_sgd(lr = lr_max, decay = 0),
+  optimizer2 = keras::optimizer_sgd(lr = lr_max, decay = 0),
   unitPower2,
   trainLabels2 = trainLabels,
   epochs2 = 5,
@@ -18,7 +18,7 @@ runCLR(
   testPics2 = testPics,
   Learning_rate_l2 = Learning_rate_l,
   Learning_rate_h2 = Learning_rate_h,
-  pathOut = "keras/3categories/bayesmodels/"
+  pathOut = "data/example/bayesmodels/"
 )
 }
 \arguments{

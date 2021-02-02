@@ -14,7 +14,11 @@ cleavageWindows(
   addToDir = T,
   onlyOneTest = F,
   edgesExtend1 = c(1, 21),
-  gffTrans = gffTrans
+  gffTrans = gffTrans,
+  savePics = T,
+  jpegWidHei = c(480, 480),
+  qual = 75,
+  pz = 12
 )
 }
 \arguments{
@@ -55,6 +59,12 @@ will not be recognized by the CNN. This to exclude potential false positives cau
 remove the has in the function script, this as a precaution not to remove any pictures by accident
 }}
 
+\item{onlyOneTest}{\itemize{
+\item sometimes the script is missing one cleavage picture for unknown reasons. Hence,
+not reporting that all files are created but still not creating any more. If this is the case
+one can test for this by running with "onlyOneTest = T", default is F.
+}}
+
 \item{edgesExtend1}{\itemize{
 \item how many positions from the cleavage site that are included in the pictures. Default is c(1,2),
 defining 1 pos upstream and 21 positions downstream. As the degradome reads are 20 nt each this defines
@@ -65,6 +75,14 @@ as possible but still catch the caracteristic "cleavage tower".
 \item{gffTrans}{\itemize{
 \item a dataframe of your imported gff with V10 = transcript ID see  for example extendGffTrans in makeWindowPictureFunc for example
 }}
+
+\item{savePics}{T if you want the files to be saved in your dirO, F if just want them to be plotted in your RStudio browser. Default = T}
+
+\item{jpegWidHei}{c(Width,Height), Width and height of saved jpeg images. Default = c(480,480)}
+
+\item{qual}{Quality of your saved images. Default = 75}
+
+\item{pz}{Pointsize of saved images. Default = 12}
 }
 \description{
 This is an example for how the windows aka cleavage pictures might be created.
@@ -72,7 +90,7 @@ feel free to use your own pictures. However if using the CNN model we designed i
 To adopt this script to your data as other pictures might not be recognized by the model.
 }
 \examples{
-cleavageWindows(dirO = paste0("pathOut/"), 
+cleavageWindows(dirO = paste0("pathOut/"),
 cleavageData = cleavageDataDataset,
 aliFilesPath = "path/bamTranscriptome/",
 aliFilesPattern1 = "pattern1.sorted.bam$",

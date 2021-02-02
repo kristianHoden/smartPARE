@@ -14,7 +14,7 @@
 #' as possible but still catch the caracteristic "cleavage tower".
 #' @param ylim1 - defines the minimum plotted height of the y-axis. In practise this means a lower "cleavage tower"
 #' will not be recognized by the CNN. This to exclude potential false positives caused by noice
-#' @paramonlyOneTest - sometimes the script is missing one cleavage picture for unknown reasons. Hence,
+#' @param onlyOneTest - sometimes the script is missing one cleavage picture for unknown reasons. Hence,
 #' not reporting that all files are created but still not creating any more. If this is the case
 #' one can test for this by running with "onlyOneTest = T", default is F.
 #' @param addToDir - if one wants to add the pictures to the directory. Default is T. If F the user also need to
@@ -29,6 +29,10 @@
 #' extracted from the 9th column (V9). However, most GFF files I've been exposed to are different.
 #' In the attached function extendGffTrans you can see how this was achieved from the Jupe dataset (Jupe et al. 2013)
 #' I was using.
+#' @param savePics T if you want the files to be saved in your dirO, F if just want them to be plotted in your RStudio browser. Default = T
+#' @param jpegWidHei c(Width,Height), Width and height of saved jpeg images. Default = c(480,480)
+#' @param qual Quality of your saved images. Default = 75
+#' @param pz Pointsize of saved images. Default = 12
 #' @keywords cleavageWindows
 #' @export
 #' @examples
@@ -43,8 +47,6 @@
 #' edgesExtend1 = c(1,21),
 #' gffTrans = gffTrans
 #' )
-
-
 cleavageWindows <- function(dirO = paste0("pathOut/"),
                             cleavageData = cleavageDataDataset,
                             aliFilesPath = "path/bamTranscriptome/",
@@ -61,7 +63,7 @@ cleavageWindows <- function(dirO = paste0("pathOut/"),
                             pz = 12
 ){
   transAndPosToBam <- function(
-    PotInPotvsNoInf4 = data.frame(genesT="PGSC0003DMT400019853", posT=(974)),
+    transAndPos = data.frame(genesT="PGSC0003DMT400019853", posT=974),
     edgesExtend1 = 100,
     aliFilesPattern1 = "B_GF(.*?).sorted.bam$",
     aliFilesPath = "bamTranscript/",
@@ -84,16 +86,20 @@ cleavageWindows <- function(dirO = paste0("pathOut/"),
 
 
 
-      library(Rsamtools)
       #par(mfrow=c(2,2), mar=c(0,0,0,0))
+      facToNum <-function(fac){
+        return(as.numeric(as.character(fac)))
+      }
 
       aliFilesPath2 <- list.files(path = aliFilesPath,pattern = aliFilesPattern,full.names = T)
       printP("Deg:",aliFilesPath2)
-      bamFile <- BamFile(file = aliFilesPath2[1])
-      seqinfoBam <- seqinfo(bamFile)
+      bamFile <- Rsamtools::BamFile(file = aliFilesPath2[1])
+      seqinfoBam <- Rsamtools::seqinfo(bamFile)
       bamChr <- grep(pattern = chr1, x = names(seqinfoBam))
       seqMax <- seqinfoBam[names(seqinfoBam)[bamChr],]
-      seqMax2 <- seqlengths(seqMax)
+      seqMax2 <- GenomeInfoDb::seqlengths(seqMax)
+
+
 
       posT <- facToNum(posT)
       chr1 <- as.character(names(seqMax2))
@@ -119,9 +125,9 @@ cleavageWindows <- function(dirO = paste0("pathOut/"),
         intEnd <- seqMax2
       }
 
-      mygene <- GRanges(chr1, ranges=IRanges(intStart, intEnd))
-      z1 <- GRanges(chr1,IRanges(intStart,intEnd),strand="+" )
-      z2 <- GRanges(chr1,IRanges(intStart,intEnd),strand="-" )
+      mygene <- GenomicRanges::GRanges(chr1, ranges=IRanges::IRanges(intStart, intEnd))
+      z1 <- GenomicRanges::GRanges(chr1,IRanges::IRanges(intStart,intEnd),strand="+" )
+      z2 <- GenomicRanges::GRanges(chr1,IRanges::IRanges(intStart,intEnd),strand="-" )
 
       plotBamGene <- function(aliFile,
                               mygene,
@@ -131,19 +137,19 @@ cleavageWindows <- function(dirO = paste0("pathOut/"),
                               ylim1 = ylim1,
                               strand3){
 
-        mygene.reads <- readGAlignments(file=aliFile,
-                                        param=ScanBamParam(which=mygene,
-                                                           what=c("seq","mapq","flag","qual","isize")
-                                        )
+        mygene.reads <- GenomicAlignments::readGAlignments(file=aliFile,
+                                                           param=Rsamtools::ScanBamParam(which=mygene,
+                                                                                         what=c("seq","mapq","flag","qual","isize")
+                                                           )
         )
 
         mygene.readsP <- mygene.reads[which(strand(mygene.reads) == "+")]
         mygene.readsM <- mygene.reads[which(strand(mygene.reads) == "-")]
 
-        covP <- coverage(mygene.readsP)
+        covP <- IRanges::coverage(mygene.readsP)
         numP <- as.numeric(covP[[chr1]][ranges(z1)])
 
-        covM <- coverage(mygene.readsM)
+        covM <- IRanges::coverage(mygene.readsM)
         numM <- as.numeric(covM[[chr1]][ranges(z2)])
 
         lim1 <- max(numM,numP)
@@ -165,7 +171,7 @@ cleavageWindows <- function(dirO = paste0("pathOut/"),
           lines(-numM, col="red", lwd=2)
           abline(v = length(numM)/2)
         }else{
-          basenam <- basename(aliFile)
+          basenam <- BiocGenerics::basename(aliFile)
 
           pos <- data.frame(Chr=rep(chr1, length(numP)), Strand=rep("+", length(numP)), Position= intStart:intEnd, Coverage= numP,
                             bam = rep(basenam, length(numP)))
@@ -174,13 +180,15 @@ cleavageWindows <- function(dirO = paste0("pathOut/"),
 
           covdf <- rbind(neg,pos)
           covdf$Strand <- factor(covdf$Strand,levels = c("+", "-"))
-          p <- ggplot(covdf, aes(Position, Coverage, fill=Strand)) +
-            geom_bar(stat="identity", position="identity")+ # heading facet_wrap(~bam)+
-            geom_vline(xintercept = posT, color ="black", size = .3)+
-            geom_vline(xintercept = posTend, color ="black", size = .3)+
-            geom_hline(yintercept = 0, color ="black", size = .3) +
-            ylim(-lim1, lim1) + xlim(xlim1-1, xlim2+1)  +
-            theme_classic() +theme(legend.position = "none")
+          p <- ggplot2::ggplot(covdf, ggplot2::aes(Position, Coverage, fill=Strand)) +
+            ggplot2::geom_bar(stat="identity", position="identity")+ # heading facet_wrap(~bam)+
+            ggplot2::geom_vline(xintercept = posT, color ="black", size = .3)+
+            ggplot2::geom_vline(xintercept = posTend, color ="black", size = .3)+
+            ggplot2::geom_hline(yintercept = 0, color ="black", size = .3) +
+            ggplot2::ylim(-lim1, lim1) +
+            ggplot2::xlim(xlim1-1, xlim2+1)  +
+            ggplot2::theme_classic() +
+            ggplot2::theme(legend.position = "none")
           return(p)
         }
 
@@ -225,7 +233,7 @@ cleavageWindows <- function(dirO = paste0("pathOut/"),
           }
           )
           p2 <- c(p,p1)
-          library(gridExtra)
+
           lenP <- length(p2)
 
           lay1 <- rbind(c(1,1),
@@ -243,30 +251,33 @@ cleavageWindows <- function(dirO = paste0("pathOut/"),
                            names(printPage[,(ceiling(ncolP/3)+1):(ceiling(ncolP/3*2))]), as.character(printPage[,(ceiling(ncolP/3)+1):(ceiling(ncolP/3*2))]),
                            names(printPage[,(ceiling(ncolP/3*2)+1):ncolP]),as.character(printPage[,(ceiling(ncolP/3*2)+1):ncolP]))
 
-          gridTab2 <-list(tableGrob(gridTab,theme = mytheme))
-          print(do.call(grid.arrange, c(c(gridTab2,p2),
-                                        layout_matrix=list(lay1)
+          gridTab2 <-list(gridExtra::tableGrob(gridTab,theme = mytheme))
+          print(do.call(gridExtra::grid.arrange, c(c(gridTab2,p2),
+                                                   layout_matrix=list(lay1)
           )))
 
 
         }else{
           library(gridExtra)
           print("No Ctrl found")
-          print(do.call(grid.arrange, c(p, ncol=2, layout_matrix=list(cbind(c(1,3), c(2,4))))))
+          print(do.call(gridExtra::grid.arrange, c(p, ncol=2, layout_matrix=list(cbind(c(1,3), c(2,4))))))
         }
       }
 
 
     }
+    printP <- function(...){
+      print(paste(...))
+    }
     print("tra chrom pos path")
-    if(length(PotInPotvsNoInf4$genesT) == 1){
-      ChromPosT <- rbind(as.character(PotInPotvsNoInf4$posT), as.character(PotInPotvsNoInf4$genesT))
+    if(length(transAndPos$genesT) == 1){
+      ChromPosT <- rbind(as.character(transAndPos$posT), as.character(transAndPos$genesT))
       strand3 <- "+"
 
     }else{
-      ChromPosT <- sapply(1:length(PotInPotvsNoInf4$genesT), function(x){
+      ChromPosT <- sapply(1:length(transAndPos$genesT), function(x){
         print(x)
-        if(x > length(PotInPotvsNoInf4$genesT)){
+        if(x > length(transAndPos$genesT)){
           stop()
         }
       }
@@ -299,7 +310,7 @@ cleavageWindows <- function(dirO = paste0("pathOut/"),
                      aliFilesPatternCtrl = aliFilesPatternCtrl1,
                      chr1 = chromPos1[x],
                      edgesExtend = edgesExtend1,
-                     printPage = PotInPotvsNoInf4[x,],
+                     printPage = transAndPos[x,],
                      individual = individual,
                      ylim1 = ylim1,
                      strand3 = strand3
@@ -315,7 +326,7 @@ cleavageWindows <- function(dirO = paste0("pathOut/"),
                      aliFilesPatternCtrl = "",
                      chr1 = chromPos1[x],
                      edgesExtend = edgesExtend1,
-                     printPage = PotInPotvsNoInf4[x,],
+                     printPage = transAndPos[x,],
                      individual = T,
                      ylim1 = ylim1,
                      strand3 = strand3
@@ -326,7 +337,7 @@ cleavageWindows <- function(dirO = paste0("pathOut/"),
 
   }
   if(!is.null(cleavageData$NFA)){
-    cleavageData = cleavageData[order(cleavageData$NFA, decreasing = T),]
+    cleavageData <- cleavageData[order(cleavageData$NFA, decreasing = T),]
   }
   run1 <- unique(cleavageData[,c("genesT","posT")])
   if(addToDir == F){
@@ -353,6 +364,10 @@ cleavageWindows <- function(dirO = paste0("pathOut/"),
     }
 
     existingFiles2 <- substrToChrFromEnd(text = existingFiles,pattern1 = "_", nrPatFromEnd = 0)
+    facToCharDf <- function(bob){
+      bob <- data.frame(lapply(bob, as.character), stringsAsFactors=FALSE)
+      return(bob)
+    }
     run2 <- facToCharDf(run1)
     run3 <- paste(run2[,1], run2[,2],sep = "_")
 
@@ -373,7 +388,7 @@ cleavageWindows <- function(dirO = paste0("pathOut/"),
            width = jpegWidHei[1], height = jpegWidHei[2], quality = qual, pointsize = pz)
     }
 
-    transAndPosToBam(PotInPotvsNoInf4 = run1[x,],
+    transAndPosToBam(transAndPos = run1[x,],
                      edgesExtend1 = edgesExtend1,
                      aliFilesPattern1 = aliFilesPattern1,
                      aliFilesPath = aliFilesPath,
@@ -387,7 +402,7 @@ cleavageWindows <- function(dirO = paste0("pathOut/"),
       jpeg(file = paste0(dirO,"/",run1$genesT[x],"_",run1$posT[x],"_R2.jpg"),
            width = jpegWidHei[1], height = jpegWidHei[2], quality = qual, pointsize = pz)
     }
-    transAndPosToBam(PotInPotvsNoInf4 = run1[x,],
+    transAndPosToBam(transAndPos = run1[x,],
                      edgesExtend1 = edgesExtend1,
                      aliFilesPattern1 = aliFilesPattern2,
                      aliFilesPath = aliFilesPath,
@@ -401,6 +416,7 @@ cleavageWindows <- function(dirO = paste0("pathOut/"),
     }
   }
 }
+
 
 #' Constructs a gff object
 #'
@@ -458,8 +474,6 @@ extendGffTrans <- function(gffTrans = gffTrans){
   )
   )
   colnames(gffTrans3)[1] <- "chrom"
-  colnames(gffTrans3)[4] <- "pos"
-
   colnames(gffTrans3)[4] <- "posStart"
   colnames(gffTrans3)[5] <- "pos"
   return(gffTrans3)

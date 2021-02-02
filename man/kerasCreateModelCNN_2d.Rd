@@ -54,10 +54,10 @@ kerasCreateModelCNN_2d(
 The model is used to train a Convolutional neural network model that can recognize images
 }
 \examples{
-kerasCreateModelCNN_2d(testPics, 
+kerasCreateModelCNN_2d(testPics,
 trainLabels,
 unitPower = 3,
-epochs, 
+epochs,
 batch_size,
 dropout = 0.2,
 patience = 0,

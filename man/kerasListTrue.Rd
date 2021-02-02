@@ -4,7 +4,7 @@
 \alias{kerasListTrue}
 \title{Constructs a list of the true cleavages}
 \usage{
-kerasListTrue(pathToTrue = "keras/3categories/", saveDirLevelNr = 3)
+kerasListTrue(pathToTrue = "data/example/", saveDirLevelNr = 3)
 }
 \arguments{
 \item{pathToTrue}{Path to where to look for true cleavages (dir called true) recursively}
