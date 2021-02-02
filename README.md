@@ -14,65 +14,42 @@
 
 #We hope to help you to make analysis of your degradome more efficient. Please site our article if you are using the package.  
 
+#Dependencies - The following packages must be installed: 
+        reticulate,
+        EBImage,
+        fftwtools,
+        keras,
+        tensorflow,
+        kerasR,
+        mcparallelDo,
+        cowplot,
+        reshape2,
+        ggplot2,
+        rBayesianOptimization,
+        zoo,
+        gridExtra,
+
+#Installing keras can be a challange depending on your system
+#My system was complaining about missing the hdf5=1.10.5 version why the following steps worked for me. 
+library(reticulate)
+reticulate::conda_install(c("hdf5=1.10.5"), pip = TRUE)
+reticulate::use_condaenv("hdf5=1.10.5", required = TRUE) 
+install.packages("tensorflow")
+install.packages("keras")
+install.packages("kerasR")
+library("keras")
+install_keras()
+
 #Set up smartPare:  
 #install_github('smartPare','github_username')  
 #library(smartPare)  
 
 #If you have any questions or encounter any code related problems, don't hesitate to ask or inform.  
 
-#Dependencies - The following packages must be installed. Please see our publication to see what  
-#versions I used, if struggling.  
-library("reticulate")  
-reticulate::use_condaenv("hdf5=1.10.5", required = TRUE) # This might not be necessary for you but setting up a condaenv with "hdf5=1.10.5" helped me install keras.  
-library("EBImage")  
-library("fftwtools")  
-library("keras")  
-library("tensorflow")  
-library("kerasR")  
-library("mcparallelDo")  
-library("cowplot")  
-library("reshape2")  
-library("ggplot2")  
-library("rBayesianOptimization")  
-library("zoo")  
-library("gridExtra")
-
 # Preparation of cleavage windows
 #This is just an example for how the windows aka cleavage pictures might be created.  
 #feel free to use your own pictures. However if using the CNN model we designed it is recommended  
 #To adopt this script to your data as other pictures might not be recognized by the model.  
-
-#cleavageData - must be a dataframe containing at least columns genesT (the target genes) and posT (target position in the transcript)  
-#edgesExtend1 - how many positions from the cleavage site that are included in the pictures. Default is c(1,2),  
-#defining 1 pos upstream and 21 positions downstream. As the degradome reads are 20 nt each this defines  
-#1 position upstream and downstream of the degradome reads. Only one, to try and exclude as much background  
-#as possible but still catch the caracteristic "cleavage tower".  
-#ylim1 - defines the minimum plotted height of the y-axis. In practise this means a lower "cleavage tower"  
-#will not be recognized by the CNN. This to exclude potential false positives caused by noice  
-#onlyOneTest - sometimes the script is missing one cleavage picture for unknown reasons. Hence,   
-#not reporting that all files are created but still not creating any more. If this is the case  
-#one can test for this by running with "onlyOneTest = T", default is F.  
-#addToDir - if one wants to add the pictures to the directory. Default is T. If F the user also need to  
-#remove the has in the function script, this as a precaution not to remove any pictures by accident  
-#aliFilesPath -path to the bamfiles  for the user defined degradome. The easiest is to use transcriptome  
-#generated bam files. If you do so the path must end with "bamTranscriptome/". However, this option cannot check  
-#for cleavages outside the transcripts (which is totally  fine if you have a well annotated genome).  
-#If you have trascripts and a genome but no gff file you can create a gff with the function  
-#makeGFF (reqires spaln installed on your system).  
-#Also in makeWindowPictureFunc you can find the function readGFF which is a basic function to import your GFF.  
-#IMPORTANT!!! is that your gffTrans has a 10th column with your the transcript ID. Often this must be  
-#extracted from the 9th column (V9). However, most GFF files I've been exposed to are different.  
-#In the attached function extendGffTrans you can see how this was achieved from the Jupe dataset (Jupé et al. 2013)  
-#I was using.  
-#gffTrans - a dataframe of your imported gff with V10 = transcript ID see  for example extendGffTrans  
-#in makeWindowPictureFunc for example  
-#aliFilesPattern1 - regular expression defining the pattern of your first degradome library  
-#aliFilesPattern2 - regular expression defining the pattern of your second degradome library  
-#dirO - output path  
-#savePics - T if you want the files to be saved in your dirO, F if just want them to be plotted in your RStudio browser. Default = T  
-#jpegWidHei - c(Width,Height), Width and height of saved jpeg images. Default = c(480,480)
-#qual = Quality of your saved images. Default = 75 
-#pz - Pointsize of saved images. Default = 12
 
 cleavageWindows(dirO = paste0("pathOut/"),  
                  cleavageData = cleavageDataDataset,  
