@@ -1,12 +1,12 @@
 Package: smartPARE
-Title: A framework for efficient identification of true mRNA cleavage sites
+Title: An R package for efficient identification of true mRNA cleavage sites
 Version: 1.0.0
 Authors@R: 
     person(given = "Kristian",
            family = "Hodén",
            role = c("aut", "cre"),
-           email = "kristian.hoden@gmail.com.com",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
+           email = "kristian.hoden@gmail.com"
+           )
 Description: What the package does (one paragraph).
 License: use_mit_license()
 Encoding: UTF-8
