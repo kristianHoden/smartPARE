@@ -27,7 +27,12 @@ install_keras()
 
 #Set up smartPare:  
 #devtools::install_github('kristianHoden/smartPARE')  
-#library(smartPare)  
+library(smartPARE)
+#magrittr is required for the pipes "%>%" in this script.
+library(magrittr)
+
+#to run on the example data, set wd to smartPARE installation folder
+setwd("pathTo/smartPARE/")
 
 #Some example images are attached in the subdirs of example/train, so you can se how the hierarchy of folders need to be setup to train a model, if you want to train your own. 
 
@@ -65,7 +70,7 @@ cleavageWindows(dirO = paste0("pathOut/"),
 
 #2  
 #Create the training dataset  
-homePath1 = "example/"  
+homePath1 = "example/"  #homePath1 must be defined to direct functions where subdirs of images can be found
 kerasCreateDataset_2d(homePath = homePath1 ,pixels = 28)  
 
 #3  
@@ -128,7 +133,7 @@ bayes_ucb <-
                                               bounds = search_bound,   
                                               init_grid_dt = search_grid,   
                                               init_points = 0,  
-                                              n_iter = 3,  
+                                              n_iter = 100,  
                                               acq =  "ucb" #"ei" "ucb"  
   )  
 
@@ -136,6 +141,7 @@ bayes_ucb <-
 #Check which model you prefer  
 order(bayes_ucb$Pred, decreasing = T)  
 which(bayes_ucb$Pred == max(bayes_ucb$Pred))  
+#Loss of the best model
 1/max(bayes_ucb$Pred)  
 
 # Cleavage confirmations  
