@@ -29,6 +29,10 @@ install_keras()
 #devtools::install_github('kristianHoden/smartPARE')  
 #library(smartPare)  
 
+#Some example images are attached in the subdirs of example/train, so you can se how the hierarchy of folders need to be setup to train a model, if you want to train your own. 
+
+#Our final model is found in data/model.
+
 #If you have any questions or encounter any code related problems, don't hesitate to ask or inform.  
 
 # Preparation of cleavage windows
