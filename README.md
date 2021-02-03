@@ -5,8 +5,7 @@
 #(Thody et al. 2018). This extension module was developed also to identify other sRNA cleavages because  
 #our data was rich on noise, possibly caused by degraded mRNA.  
 
-#The analysis is separated in 3 parts. "Preparation of cleavage windows", "Cleavage picture training" and  
-#Cleavage confirmations.  
+#The analysis is separated in 3 parts. "Preparation of cleavage windows", "Cleavage window training" and Cleavage confirmations.  
 
 #If you decide to use your own pictures, the first step "Preparation of cleavage pictures"  
 #might not be necessary (but hopefully helpful).  
