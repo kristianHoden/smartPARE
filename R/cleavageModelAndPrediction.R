@@ -604,8 +604,8 @@ tuneCLR <- function(batch_size2 = 64,
   #rollmeanSplit <- 10
   rm <- round(length(lr_hist)/rollmeanSplit)
 
-  lrRM <- rollmean(lr_hist, rm)
-  accRM <- rollmean(callback_log_acc_lr$acc, rm)
+  lrRM <- zoo::rollmean(lr_hist, rm)
+  accRM <- zoo::rollmean(callback_log_acc_lr$acc, rm)
   accDforig <- as.data.frame(cbind(lr = lr_hist, acc= callback_log_acc_lr$acc))
   accDf <- as.data.frame(cbind(lr = lrRM, acc= accRM))
 
