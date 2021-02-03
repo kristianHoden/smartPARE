@@ -12,7 +12,7 @@
 #' kerasCreateDataset_2d(homePath = "keras/3categories/", pixels = 28)
 
 kerasCreateDataset_2d <- function(
-  homePath = "data/example/",
+  homePath = "example/",
   pixels = 28){
   memory.limit(size=100000)
 
@@ -697,7 +697,7 @@ runCLR <- function(optimizer2 = keras::optimizer_sgd(lr=lr_max, decay=0),
                    testPics2 = testPics,
                    Learning_rate_l2 = Learning_rate_l,
                    Learning_rate_h2 = Learning_rate_h,
-                   pathOut = "data/example/bayesmodels/"
+                   pathOut = paste0(homePath1, "/bayesmodels/")
                    ){
   #adopted from http://thecooldata.com/2019/01/learning-rate-finder-with-cifar10-keras-r/
   ###########################Explanation#####################

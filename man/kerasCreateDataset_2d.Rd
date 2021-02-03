@@ -4,7 +4,7 @@
 \alias{kerasCreateDataset_2d}
 \title{Function to import data to train the model}
 \usage{
-kerasCreateDataset_2d(homePath = "data/example/", pixels = 28)
+kerasCreateDataset_2d(homePath = "example/", pixels = 28)
 }
 \arguments{
 \item{homePath}{Path to your working directory}

@@ -18,7 +18,7 @@ runCLR(
   testPics2 = testPics,
   Learning_rate_l2 = Learning_rate_l,
   Learning_rate_h2 = Learning_rate_h,
-  pathOut = "data/example/bayesmodels/"
+  pathOut = paste0(homePath1, "/bayesmodels/")
 )
 }
 \arguments{
