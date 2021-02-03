@@ -15,28 +15,7 @@
 #We hope to help you to make analysis of your degradome more efficient. Please site our article if you are using the package.  
 
 #Dependencies - The following packages are required: 
-# reticulate,
-# EBImage,
-# fftwtools,
-# keras,
-# tensorflow,
-# kerasR,
-# mcparallelDo,
-# cowplot,
-# reshape2,
-# ggplot2,
-# rBayesianOptimization,
-# zoo,
-# GenomicRanges,
-# GenomicAlignments,
-# Rsamtools, 
-# gridExtra,
-# data.table, 
-# reshape2,
-# generics, 
-# IRanges, 
-# BiocGenerics, 
-# magrittr 
+#reticulate, EBImage, fftwtools, keras, tensorflow, kerasR, mcparallelDo, cowplot, reshape2, ggplot2, rBayesianOptimization, zoo, GenomicRanges, GenomicAlignments, Rsamtools,  gridExtra, data.table, reshape2, generics, IRanges, BiocGenerics, magrittr 
 
 #Installing keras can be a challange depending on your system. My system was complaining about missing the hdf5=1.10.5 version why the following steps worked for me.   
 library(reticulate)  
