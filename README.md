@@ -1,22 +1,21 @@
 # smartPARE
 
-#This is an R package for sRNA cleavage confirmation on degradome data, that can be applied on sRNA cleavage predictions.  
-#I used PAREsnip2 which is to date the most efficient miRNA cleavage analysis tool according to their paper  
-#(Thody et al. 2018). This extension module was developed also to identify other sRNA cleavages because  
-#our data was rich on noise, possibly caused by degraded mRNA.  
+#This is an R package for sRNA cleavage confirmation of degradome data, that can be applied on sRNA cleavage prediction data.  
+#I used PAREsnip2 to predict the sRNA cleavages, which is to date the most efficient miRNA cleavage analysis tool according to their paper  
+#(Thody et al. 2018). smartPARE was then run to evaluate the PAREsnip2 predicted cleavages. Our data was rich on noise, possibly caused by degraded mRNA, causing a lot of false positives in the PAREsnip2 generated data when including all types of sRNA.  smartPARE helped in identifying the false positives in the PAREsnip2 data. 
 
-#The analysis is separated in 3 parts. "Preparation of cleavage windows", "Cleavage window training" and Cleavage confirmations.  
+#The analysis is separated into 3 parts. "Preparation of cleavage windows", "Cleavage window training" and Cleavage confirmations.  
 
-#If you decide to use your own pictures, the first step "Preparation of cleavage pictures"  
+#If you decide to use your own images, the first step "Preparation of cleavage windows"  
 #might not be necessary (but hopefully helpful).  
 #If you go with our CNN model, the second step "Cleavage window training" can be skipped.  
 
-#We hope to help you to make analysis of your degradome more efficient. Please site our article if you are using the package.  
+#We hope to help you to make analysis of your degradome more efficient. Please site our article if you are using the package (still unpublished).  
 
 #Dependencies - The following packages are required: 
 #reticulate, EBImage, fftwtools, keras, tensorflow, kerasR, mcparallelDo, cowplot, reshape2, ggplot2, rBayesianOptimization, zoo, GenomicRanges, GenomicAlignments, Rsamtools,  gridExtra, data.table, reshape2, generics, IRanges, BiocGenerics, magrittr 
 
-#Installing keras can be a challange depending on your system. My system was complaining about missing the hdf5=1.10.5 version why the following steps worked for me.   
+#Installing keras can be a challange depending on your system. My system was complaining about missing the hdf5=1.10.5 version why the following steps worked for me but I recommend  first trying a standard installation of keras.   
 library(reticulate)  
 reticulate::conda_install(c("hdf5=1.10.5"), pip = TRUE)  
 reticulate::use_condaenv("hdf5=1.10.5", required = TRUE)  
@@ -122,11 +121,11 @@ search_grid <- data.frame(unitPower2 = c(1,2),
 count1 <-1  
 bayes_ucb <-  
   rBayesianOptimization::BayesianOptimization(FUN = runCLR,   
-                       bounds = search_bound,   
-                       init_grid_dt = search_grid,   
-                       init_points = 0,  
-                       n_iter = 3,  
-                       acq =  "ucb" #"ei" "ucb"  
+                                              bounds = search_bound,   
+                                              init_grid_dt = search_grid,   
+                                              init_points = 0,  
+                                              n_iter = 3,  
+                                              acq =  "ucb" #"ei" "ucb"  
   )  
 
 #8  
