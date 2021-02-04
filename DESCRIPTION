@@ -35,4 +35,5 @@ Imports:
         generics, 
         IRanges, 
         BiocGenerics, 
-        magrittr 
+        magrittr,
+        stringr

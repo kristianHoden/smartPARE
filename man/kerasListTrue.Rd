@@ -4,10 +4,10 @@
 \alias{kerasListTrue}
 \title{Constructs a list of the true cleavages}
 \usage{
-kerasListTrue(pathToTrue = "data/example/", saveDirLevelNr = 3)
+kerasListTrue(pathToTrue = "data/example/", saveDirLevelNr = 0)
 }
 \arguments{
-\item{pathToTrue}{Path to where to look for true cleavages (dir called true) recursively}
+\item{pathToTrue}{Path to where to recursively look for true cleavages (dirs called true)}
 
 \item{saveDirLevelNr}{Depth of recursion where the true dirs should be found at}
 }

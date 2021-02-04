@@ -553,7 +553,7 @@ tuneCLR <- function(batch_size2 = 64,
     y
   }
 
-  inflect <- function(x, threshold = 1){
+  inflect <- function(x, threshold = 1){ #threshold - how big a local maxima or minima
     up   <- sapply(1:threshold, function(n) c(x[-(seq(n))], rep(NA, n)))
     down <-  sapply(-1:-threshold, function(n) c(rep(NA,abs(n)), x[-seq(length(x), length(x) - abs(n) + 1)]))
     a    <- cbind(x,up,down)
@@ -571,6 +571,9 @@ tuneCLR <- function(batch_size2 = 64,
   n_iter <- ceiling(epochs_find_LR * (NROW(testPics)/batch_size2))
   growth_constant <- 15
 
+  if(n_iter < epochs_find_LR){
+    n_iter <- epochs_find_LR
+  }
   # our learner will be an exponential function:
   l_rate <- exp(seq(0, growth_constant, length.out=n_iter))
   l_rate <- l_rate/max(l_rate)
@@ -593,8 +596,7 @@ tuneCLR <- function(batch_size2 = 64,
     callbacks = list(callback_lr, callback_logger, callback_log_acc_lr),
     verbose = 2,
     validation_split=validation_split2)
-  # install.packages("zoo")
-  #callback_log_acc_lr$acc
+  
 
   plot(lr_hist,
        callback_log_acc_lr$acc,
@@ -602,10 +604,10 @@ tuneCLR <- function(batch_size2 = 64,
        xlab="learning rate", ylab="accuracy: rollmean(100)")
 
   #rollmeanSplit <- 10
-  rm <- round(length(lr_hist)/rollmeanSplit)
+  rm2 <- round(length(lr_hist)/rollmeanSplit)
 
-  lrRM <- zoo::rollmean(lr_hist, rm)
-  accRM <- zoo::rollmean(callback_log_acc_lr$acc, rm)
+  lrRM <- zoo::rollmean(lr_hist, rm2)
+  accRM <- zoo::rollmean(callback_log_acc_lr$acc, rm2)
   accDforig <- as.data.frame(cbind(lr = lr_hist, acc= callback_log_acc_lr$acc))
   accDf <- as.data.frame(cbind(lr = lrRM, acc= accRM))
 
@@ -614,16 +616,29 @@ tuneCLR <- function(batch_size2 = 64,
        log="x", type="l", pch=16, cex=0.3,
        xlab="learning rate", ylab="accuracy: rollmean(100)")
 
-  bottoms <- lapply(1:n, function(x) inflect(accDf$acc, threshold = x)$minima)
-  tops <- lapply(1:n, function(x) inflect(accDf$acc, threshold = x)$maxima)
-
+  threshold1 <- 3
+  bottoms <- lapply(1:threshold1, function(x) inflect(accDf$acc, threshold = x)$minima)
+  tops <- lapply(1:threshold1, function(x) inflect(accDf$acc, threshold = x)$maxima)
+  
+  #2 - minima or maxima with threshold 2 is good
   bottoms1 <- bottoms[[2]]
   tops1 <- tops[[2]]
 
-  minMax <- sapply(seq_along(bottoms1), function(x){
+  minMax <- suppressWarnings(sapply(seq_along(bottoms1), function(x){
     top1 <- tops1[max(which(data.table::between(x = tops1,lower = bottoms1[x], upper =bottoms1[x+1])))]
     cbind(bottoms1[x],top1)
-  })
+  }))
+  for(x in(1:length(minMax[1,]))){
+    if(is.na(minMax[1,x])){
+      minMax[1,x] <- 1
+    }
+  }
+  
+  for(x in(1:length(minMax[1,]))){
+    if(is.na(minMax[2,x])){
+      minMax[2,x] <- length(accDf$acc)  
+    }
+  }
   # colSums(minMax)
 
   # longest slope method
@@ -639,9 +654,7 @@ tuneCLR <- function(batch_size2 = 64,
   assign("Learning_rate_l", Learning_rate_l, envir = .GlobalEnv)
   assign("Learning_rate_h", Learning_rate_h, envir = .GlobalEnv)
   assign("accDforig", accDforig, envir = .GlobalEnv)
-  print("if the steepest positive slope is not the largest calculation, please asign Learning_rate_h or Learning_rate_l self.")
-  print("if problem with Learning_rate calculation, please asign Learning_rate_h or Learning_rate_l self.")
-
+  print("if the steepest positive slope is not the largest calculation, please assign Learning_rate_h or Learning_rate_l yourself.")
 }
 
 
@@ -684,7 +697,7 @@ tuneCLR <- function(batch_size2 = 64,
 
 
 
-runCLR <- function(optimizer2 = keras::optimizer_sgd(lr=lr_max, decay=0),
+runCLR <- function(optimizer2 = keras::optimizer_sgd(lr=lr_max1, decay=0),
                    unitPower2,
                    trainLabels2 = trainLabels,
                    epochs2 = 5,
@@ -702,6 +715,70 @@ runCLR <- function(optimizer2 = keras::optimizer_sgd(lr=lr_max, decay=0),
   #adopted from http://thecooldata.com/2019/01/learning-rate-finder-with-cifar10-keras-r/
   ###########################Explanation#####################
   #Function used to run CLR
+  Cyclic_LR <- function(iteration=1:32000,
+                        base_lr=1e-5,
+                        max_lr=1e-3,
+                        step_size=2000,
+                        mode='triangular',
+                        gamma=1,
+                        scale_fn=NULL,
+                        scale_mode='cycle'){ # translated from python to R, original at: https://github.com/bckenstler/CLR/blob/master/clr_callback.py # This callback implements a cyclical learning rate policy (CLR). # The method cycles the learning rate between two boundaries with # some constant frequency, as detailed in this paper (https://arxiv.org/abs/1506.01186). # The amplitude of the cycle can be scaled on a per-iteration or per-cycle basis. # This class has three built-in policies, as put forth in the paper. # - "triangular": A basic triangular cycle w/ no amplitude scaling. # - "triangular2": A basic triangular cycle that scales initial amplitude by half each cycle. # - "exp_range": A cycle that scales initial amplitude by gamma**(cycle iterations) at each cycle iteration. # - "sinus": A sinusoidal form cycle # # Example # > clr <- Cyclic_LR(base_lr=0.001, max_lr=0.006, step_size=2000, mode='triangular', num_iterations=20000) # > plot(clr, cex=0.2)
+    
+    # Class also supports custom scaling functions with function output max value of 1:
+    # > clr_fn <- function(x) 1/x # > clr <- Cyclic_LR(base_lr=0.001, max_lr=0.006, step_size=400, # scale_fn=clr_fn, scale_mode='cycle', num_iterations=20000) # > plot(clr, cex=0.2)
+    
+    # # Arguments
+    #   iteration:
+    #       if is a number:
+    #           id of the iteration where: max iteration = epochs * (samples/batch)
+    #       if "iteration" is a vector i.e.: iteration=1:10000:
+    #           returns the whole sequence of lr as a vector
+    #   base_lr: initial learning rate which is the
+    #       lower boundary in the cycle.
+    #   max_lr: upper boundary in the cycle. Functionally,
+    #       it defines the cycle amplitude (max_lr - base_lr).
+    #       The lr at any cycle is the sum of base_lr
+    #       and some scaling of the amplitude; therefore
+    #       max_lr may not actually be reached depending on
+    #       scaling function.
+    #   step_size: number of training iterations per
+    #       half cycle. Authors suggest setting step_size
+    #       2-8 x training iterations in epoch.
+    #   mode: one of {triangular, triangular2, exp_range, sinus}.
+    #       Default 'triangular'.
+    #       Values correspond to policies detailed above.
+    #       If scale_fn is not None, this argument is ignored.
+    #   gamma: constant in 'exp_range' scaling function:
+    #       gamma**(cycle iterations)
+    #   scale_fn: Custom scaling policy defined by a single
+    #       argument lambda function, where
+    #       0 <= scale_fn(x) <= 1 for all x >= 0.
+    #       mode paramater is ignored
+    #   scale_mode: {'cycle', 'iterations'}.
+    #       Defines whether scale_fn is evaluated on
+    #       cycle number or cycle iterations (training
+    #       iterations since start of cycle). Default is 'cycle'.
+    
+    ########
+    if(is.null(scale_fn)==TRUE){
+      if(mode=='triangular'){scale_fn <- function(x) 1; scale_mode <- 'cycle';}
+      if(mode=='triangular2'){scale_fn <- function(x) 1/(2^(x-1)); scale_mode <- 'cycle';}
+      if(mode=='exp_range'){scale_fn <- function(x) gamma^(x); scale_mode <- 'iterations';}
+      if(mode=='sinus'){scale_fn <- function(x) 0.5*(1+sin(x*pi/2)); scale_mode <- 'cycle';}
+    }
+    lr <- list()
+    if(is.vector(iteration)==TRUE){
+      for(iter in iteration){
+        cycle <- floor(1 + (iter / (2*step_size)))
+        x2 <- abs(iter/step_size-2 * cycle+1)
+        if(scale_mode=='cycle') x <- cycle
+        if(scale_mode=='iterations') x <- iter
+        lr[[iter]] <- base_lr + (max_lr-base_lr) * max(0,(1-x2)) * scale_fn(x)
+      }
+    }
+    lr <- do.call("rbind",lr)
+    return(as.vector(lr))
+  }
   rib <- function(code){
     ga2 <- mcparallelDo::mcparallelDo(code,targetValue = "ga")
     return(ga2)
@@ -746,7 +823,7 @@ runCLR <- function(optimizer2 = keras::optimizer_sgd(lr=lr_max, decay=0),
   callback_lr <- keras::callback_lambda(on_train_begin=callback_lr_init, on_batch_begin=callback_lr_set)
   callback_logger <- keras::callback_lambda(on_batch_end=callback_lr_log)
 
-  n_iter <- ceiling(epochs * (NROW(testPics2)/batch_size))
+  n_iter <- ceiling(epochs2 * (NROW(testPics2)/batch_size2))
   if(n_iter < 75){
     n_iter <-75
   }
@@ -840,21 +917,25 @@ runCLR <- function(optimizer2 = keras::optimizer_sgd(lr=lr_max, decay=0),
 #'
 #' Searches for the true cleavages in dirs called true at the depth of recursion
 #' The list can be used to filer away false cleavages from the original dataset
-#' @param pathToTrue Path to where to look for true cleavages (dir called true) recursively
+#' @param pathToTrue Path to where to recursively look for true cleavages (dirs called true) 
 #' @param saveDirLevelNr Depth of recursion where the true dirs should be found at
 #' @keywords kerasListTrue
 #' @export
 #' @examples
 #' kerasListTrue(pathToTrue = "keras/3categories/",
 #' saveDirLevelNr = 3 )
-kerasListTrue <- function(pathToTrue = "data/example/", saveDirLevelNr = 3 ){
+kerasListTrue <- function(pathToTrue = "data/example/", saveDirLevelNr = 0 ){
   ###########################Explanation#####################
   #Function used to gather info about what pictures are true hits
   findNthCharFromEnd <- function(pattern,string,n){
     stringBack <- rev(unlist(gregexpr(pattern, string)))[n]
     return(stringBack)
   }
-  nam <- substring(pathToTrue,findNthCharFromEnd(pattern = "/", string = pathToTrue, n = saveDirLevelNr)+1)
+  if(saveDirLevelNr == 0){
+    nam <- pathToTrue
+  }else{
+    nam <- substring(pathToTrue,findNthCharFromEnd(pattern = "/", string = pathToTrue, n = saveDirLevelNr)+1)
+  }
   fileToTrue <- gsub(pattern = "/", replacement = "_", x = nam)
   inPotFiles <- list.files(pathToTrue,recursive = T)
   inPotFilesT <- inPotFiles[grep(x = inPotFiles, pattern = "true")]
@@ -863,3 +944,30 @@ kerasListTrue <- function(pathToTrue = "data/example/", saveDirLevelNr = 3 ){
   write(x = inPotFilesT, file = paste0(resultDir,"true.txt"), sep = "\t" , append = T)#, row.names = F, col.names = F)
 }
 
+#' Parses the smartPARE output file into a dataset
+#'
+#' Parses the smartPARE output file into a dataset based on the path of each true image
+#' @param smartPAREresultFile smartPARE output filepath
+#' @keywords smartPAREparse
+#' @export
+#' @examples
+#' smartPAREparse(smartPAREresultFile = paste0(homePath1,"example_results/true.txt"))
+#' 
+smartPAREparse <- function(smartPAREresultFile = paste0(homePath1,"example_results/true.txt")){
+  truePath <- readLines(con = smartPAREresultFile)
+  #splits str in pieces
+  undrLines <- length(gregexpr(truePath[1],pattern = "_")[[1]])
+  trueCleavagesDf <- stringr::str_split_fixed(truePath, "_", undrLines+1)
+  transc <- stringr::str_split_fixed(trueCleavagesDf[,undrLines-1], "/", 3)
+  transc2 <- transc[,c(3)]
+  upperPath <- trueCleavagesDf[,undrLines-2]
+  upperPath2 <- length(gregexpr(upperPath[1],pattern = "/")[[1]])
+  dsName <- stringr::str_split_fixed(trueCleavagesDf[,undrLines-2], "/", upperPath2)
+  dsName2 <- dsName[upperPath2]
+  trueCleavagesDf2 <- data.frame(cbind(dsName2, 
+                                       trueCleavagesDf[,c(3,4)],
+                                       transc2),
+                                 stringsAsFactors = F)
+  colnames(trueCleavagesDf2) <- c("ds", "posT", "ext", "transcript")
+  return(trueCleavagesDf2)
+}

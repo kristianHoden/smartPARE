@@ -5,7 +5,7 @@
 \title{Optimizes the cyclical learning rate (CLR) based convolutional neural network (CNN) model}
 \usage{
 runCLR(
-  optimizer2 = keras::optimizer_sgd(lr = lr_max, decay = 0),
+  optimizer2 = keras::optimizer_sgd(lr = lr_max1, decay = 0),
   unitPower2,
   trainLabels2 = trainLabels,
   epochs2 = 5,

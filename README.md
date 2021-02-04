@@ -13,7 +13,7 @@
 #We hope to help you to make analysis of your degradome more efficient. Please site our article if you are using the package (still unpublished).  
 
 #Dependencies - The following packages are required: 
-#reticulate, EBImage, fftwtools, keras, tensorflow, kerasR, mcparallelDo, cowplot, reshape2, ggplot2, rBayesianOptimization, zoo, GenomicRanges, GenomicAlignments, Rsamtools,  gridExtra, data.table, reshape2, generics, IRanges, BiocGenerics, magrittr 
+#reticulate, EBImage, fftwtools, keras, tensorflow, kerasR, mcparallelDo, cowplot, reshape2, ggplot2, rBayesianOptimization, zoo, GenomicRanges, GenomicAlignments, Rsamtools,  gridExtra, data.table, reshape2, generics, IRanges, BiocGenerics, magrittr, stringr 
 
 #Installing keras can be a challange depending on your system. My system was complaining about missing the hdf5=1.10.5 version why the following steps worked for me but I recommend  first trying a standard installation of keras.   
 library(reticulate)  
@@ -37,6 +37,8 @@ setwd("pathTo/smartPARE/")
 #Some example images are attached in the subdirs of example/train, so you can se how the hierarchy of folders need to be setup to train a model, if you want to train your own. 
 
 #Our final model is found in data/model.
+
+###Please save images that you want to evaluate in subdirs to your wd (homePath1) with extension _mpd ex exampleDir_mpd  or evaluate_mpd
 
 #If you have any questions or encounter any code related problems, don't hesitate to ask or inform.  
 
@@ -71,14 +73,16 @@ cleavageWindows(dirO = paste0("pathOut/"),
 #2  
 #Create the training dataset  
 homePath1 = "example/"  #homePath1 must be defined to direct functions where subdirs of images can be found
-kerasCreateDataset_2d(homePath = homePath1 ,pixels = 28)  
+pixs <- 28 
+kerasCreateDataset_2d(homePath = homePath1 ,pixels = pixs)  
 
 #3  
-#Tune the cyclical learning rate  
+#Tune the cyclical learning rate
+lr_max1 <- 0.1
 tuneCLR(batch_size2 = 64,  
         epochs_find_LR = 20,  
-        lr_max = 0.1,  
-        optimizer2 = keras::optimizer_sgd(lr=lr_max, decay=0), #optimizer_rmsprop(lr=lr_max, decay=0),  
+        lr_max = lr_max1,  
+        optimizer2 = keras::optimizer_sgd(lr=lr_max1, decay=0), #optimizer_rmsprop(lr=lr_max, decay=0),  
         validation_split2 = 0.2,  
         rollmeanSplit = 3  
 )  
@@ -91,7 +95,7 @@ tuneCLR(batch_size2 = 64,
 #Learning_rate_l = 5e-04 #1e-02  
 #Learning_rate_h = 1*10^-3  
 
-rm1 <- 20  
+rm1 <- 7 #please change so that you get as smooth curve as possible in the following plot
 plot(zoo::rollmean(accDforig$lr, rm1),  
      zoo::rollmean(accDforig$acc, rm1),  
      log="x", type="l", pch=16, cex=0.3,  
@@ -150,6 +154,8 @@ which(bayes_ucb$Pred == max(bayes_ucb$Pred))
 #Load your preferred model  
 #The model file names are written so that they start with the number of the model,  
 #then accuracy (0-1), then loss etc  
+#Again, please save images that you want to evaluate in subdirs to your wd (homePath1) with extension _mpd ex exampleDir_mpd  or evaluate_mpd
+
 
 #a if you designed your own model (your models are saved in your homeDir/bayesmodels
 #the performance of the model can be interpreted from the model name should bayes_ucb$Pred
@@ -176,5 +182,15 @@ examineCleavages(examinePath = rootExt, model = model,pixels = pixs)
 #4 
 #Constructs a list of the true cleavages that can be  
 #used to filer away false cleavages from the original dataset    
-###important that all final dirs end with _mpd ex athA_mpd or exampleDir_mpd  
-kerasListTrue(pathToTrue = homePath1)  
+###important that all final dirs end with _mpd ex exampleDir_mpd  or evaluate_mpd
+#please assign the level of subdirs from where in your homepath to evaluate for true cleavage windows
+#e.g. at the main level "example/", assign saveDirLevelNr = 0,   
+#"example/specie/" , assign saveDirLevelNr = 1 etc. The output will be written to
+#your homePath into a dir called "subdir"_results, e.g. example_results 
+
+kerasListTrue(pathToTrue = homePath1,saveDirLevelNr = 0)  
+
+#5
+#Extract the information about the true cleavage windows from your results file
+trueCleavagesDf <- smartPAREparse(smartPAREresultFile = paste0(homePath1,"example_results/true.txt"))
+trueCleavagesDf
