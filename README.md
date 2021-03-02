@@ -11,17 +11,6 @@ __Overview__ - smartPARE consists of the 3 following stages:
 
 # Installation
 
-```{r setup, include = FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>",
-  fig.align="center", 
-  warning=FALSE, 
-  message=FALSE, 
-  idy.opts=list(width.cutoff=120))
-library(smartPARE)
-```
-
 ```{r}
 #Installation requires devtools
 #install.packages("devtools")
