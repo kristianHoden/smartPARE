@@ -9,7 +9,7 @@ __Overview__ - smartPARE consists of the 3 following stages:
 1. Cleavage window training
 1. Cleavage confirmations  
 
-# Installation
+## Installation
 
 ```{r}
 #Installation requires devtools
