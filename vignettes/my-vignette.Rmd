@@ -1,0 +1,105 @@
+---
+title: "Introduction to smartPARE"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{my-vignette}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+<br>
+Hej Hej 1
+
+<br>
+
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+
+
+# Installation
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.align="center", 
+  warning=FALSE, 
+  message=FALSE, 
+  idy.opts=list(width.cutoff=120))
+library(smartPARE)
+```
+
+<br>
+Hej Hej
+<br>
+
+
+## Heading 2
+### Heading 3
+
+--------
+********
+
+* Bulleted list
+* Item 2
+    * Nested bullets need a 4-space indent.
+    * Item 2b
+    
+  * It's possible to put multiple paragraphs of text in a list item. 
+
+    But to do that, the second and subsequent paragraphs must be
+    indented by four or more spaces. It looks better if the first
+    bullet is also indented.
+
+Definition
+  : a statement of the exact meaning of a word, especially in a dictionary.
+
+_italic_ or *italic*
+__bold__ or **bold**    
+[link text](destination)
+<http://this-is-a-raw-url.com>
+
+| Right | Left | Default | Center |
+|------:|:-----|---------|:------:|
+|   12  |  12  |    12   |    12  |
+|  123  |  123 |   123   |   123  |
+|    1  |    1 |     1   |     1  |
+
+
+knitr::kable(data.frame())
+
+`code`
+
+```
+# A comment
+add <- function(a, b) a + b
+```
+
+```c
+int add(int a, int b) {
+  return a + b;
+}
+```
+
+```{r}
+# Add two numbers together
+add <- function(a, b) a + b
+add(10, 20)
+```
+
+```r
+# Add two numbers together
+add <- function(a, b) a + b
+add(10, 20)
+## [1] 30
+```
+
+```{r, results = "asis"}
+pander::pandoc.table(iris[1:3, 1:4])
+```

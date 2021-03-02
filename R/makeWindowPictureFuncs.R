@@ -11,8 +11,8 @@
 #' @param edgesExtend1 - how many positions from the cleavage site that are included in the pictures. Default is c(1,2),
 #' defining 1 pos upstream and 21 positions downstream. As the degradome reads are 20 nt each this defines
 #' 1 position upstream and downstream of the degradome reads. Only one, to try and exclude as much background
-#' as possible but still catch the caracteristic "cleavage tower".
-#' @param ylim1 - defines the minimum plotted height of the y-axis. In practise this means a lower "cleavage tower"
+#' as possible but still catch the caracteristic "cleavage block".
+#' @param ylim1 - defines the minimum plotted height of the y-axis. In practise this means a lower "cleavage block"
 #' will not be recognized by the CNN. This to exclude potential false positives caused by noice
 #' @param onlyOneTest - sometimes the script is missing one cleavage picture for unknown reasons. Hence,
 #' not reporting that all files are created but still not creating any more. If this is the case
@@ -33,10 +33,10 @@
 #' @param jpegWidHei c(Width,Height), Width and height of saved jpeg images. Default = c(480,480)
 #' @param qual Quality of your saved images. Default = 75
 #' @param pz Pointsize of saved images. Default = 12
-#' @keywords cleavageWindows
+#' @keywords smartPARE_cleavageWindows
 #' @export
 #' @examples
-#' cleavageWindows(dirO = paste0("pathOut/"),
+#' smartPARE_cleavageWindows(dirO = paste0("pathOut/"),
 #' cleavageData = cleavageDataDataset,
 #' aliFilesPath = "path/bamTranscriptome/",
 #' aliFilesPattern1 = "pattern1.sorted.bam$",
@@ -47,7 +47,7 @@
 #' edgesExtend1 = c(1,21),
 #' gffTrans = gffTrans
 #' )
-cleavageWindows <- function(dirO = paste0("pathOut/"),
+smartPARE_cleavageWindows <- function(dirO = paste0("pathOut/"),
                             cleavageData = cleavageDataDataset,
                             aliFilesPath = "path/bamTranscriptome/",
                             aliFilesPattern1 = "pattern1.sorted.bam$",

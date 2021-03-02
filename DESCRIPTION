@@ -36,4 +36,9 @@ Imports:
         IRanges, 
         BiocGenerics, 
         magrittr,
-        stringr
+        stringr,
+        pander
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
