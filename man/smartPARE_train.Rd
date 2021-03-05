@@ -5,7 +5,7 @@
 \title{Train the smartPARE CNN model}
 \usage{
 smartPARE_train(
-  homePath1 = "example/",
+  homePath1 = paste0(system.file("example/", package = "smartPARE"), "/"),
   pixels1 = 28,
   search_bound = list(denseLoop2 = c(0, 4), epochs2 = c(100, 300), batch_size2 = c(32,
     128), dropout2 = c(0, 0.3), validation_split2 = c(0.1, 0.4), convolutionalLoop2 =
@@ -28,13 +28,13 @@ Build the CNN model based on directories with cleavage images; train/goodUp (tru
 \examples{
 smartPARE_train(homePath1 = "example/",
 pixels1 = 28,
-search_bound = list(denseLoop2 = c(0,4),  
-                    epochs2 = c(100, 300),  
-                    batch_size2 = c(32,128),  
-                  dropout2 = c(0, 0.3),  
-                    validation_split2 = c(0.1,0.4),  
-                 convolutionalLoop2 = c(1,4),  
-                 NO_pooling2 = c(1,2)  
+search_bound = list(denseLoop2 = c(0,4),
+                    epochs2 = c(100, 300),
+                    batch_size2 = c(32,128),
+                  dropout2 = c(0, 0.3),
+                    validation_split2 = c(0.1,0.4),
+                 convolutionalLoop2 = c(1,4),
+                 NO_pooling2 = c(1,2)
 ),
 n_iter = 100)
 }

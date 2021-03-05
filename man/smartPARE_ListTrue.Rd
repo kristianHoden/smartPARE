@@ -4,7 +4,7 @@
 \alias{smartPARE_ListTrue}
 \title{Constructs a list of the true cleavages}
 \usage{
-smartPARE_ListTrue(pathToTrue = "data/example/", recursionLevel = 0)
+smartPARE_ListTrue(pathToTrue = "data/example/", recursionLevel = 2)
 }
 \arguments{
 \item{pathToTrue}{Path to where to recursively look for true cleavages (dirs called true)}

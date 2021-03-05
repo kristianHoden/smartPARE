@@ -1,8 +1,8 @@
 ---
 title: "smartPARE degradome-seq analysis refinements"
 output: 
-  - rmarkdown::html_vignette
-  - pdf_document
+  pdf_document:
+  rmarkdown::html_vignette:
 
 vignette: >
   %\VignetteIndexEntry{smartPARE degradome-seq analysis refinements}
@@ -75,21 +75,33 @@ knitr::opts_chunk$set(
 library(smartPARE)
 ```
 
-```{r}
+```
 #Installation requires devtools
 #install.packages("devtools")
 
-#devtools::install_github('kristianHoden/smartPARE')
-#Load the smartPARE R package
+#Install smartPARE
+devtools::install_github('kristianHoden/smartPARE')
+#Load smartPARE
 library(smartPARE)
 ```
 --------
 
+## Example images and model data
+
+<br>
+To help you set up smartPARE we have included example data and our final model in the package dir (`smartPAREdir <- system.file(package = "smartPARE")`). Example data consist of training images in the dir `smartPAREdir/example/train`. These are arranged in categories described in the _Cleavage window training_ section. Example evaluation images are located in `smartPAREdir/evaluate_smart/`. Our final model is located in `smartPAREdir/model/`. Please see the _Cleavage confirmations_ section for further details how to apply it.
+<br>
+
+
+
+
+
+
 # Generation of cleavage windows
 
 <br>
-smartPARE identifies cleavages based on images of the sRNA cleavages sites (windows). The windows are created from degradome sequencing data transcript-aligned bam-files. The standard length of dagradome-seq reads are 20 nt. Hence, the default windows are generated from an area 1 nucleotides (nt) upstream the cleavage site to 21 nt downstream. The narrow mariginal to the proposed cleavage site reads to exclude as much noise as possible but still include the characteristic cleavage block (seen in the following image).  
-<br>
+smartPARE identifies cleavages based on images of the sRNA cleavages sites (windows). The windows are created from degradome sequencing data transcript-aligned bam-files. The standard length of dagradome-seq reads are 20 nt. Hence, the default windows are generated from an area 1 nucleotides (nt) upstream the cleavage site to 21 nt downstream. The narrow mariginal to the proposed cleavage site reads to exclude as much noise as possible but still include the characteristic cleavage block (seen in the following image).  <br>
+
 ![Characteristic cleavage pattern](images/cleavage.jpg)
 
 ```
@@ -129,17 +141,21 @@ Images displaying in the output dir `dirO` the read coverage surrounding the cle
 
 # Cleavage window training
 
-This stage is only necessary if deciding to create a new CNN model. Our pre-trained model is found in [../data/model/](../data/model/CNNmodel.h5)
+This stage is only necessary if deciding to create a new CNN model. Our pre-trained model is found in `smartPAREdir/model/CNNmodel.h5")`
+
 
 __Preparation:__ 
 
+An example of the following instructions is seen in `smartPAREdir/example/train`
 *   Create a directory called train with three subdirs called goodUp, goodDown and bad. 
 * Collect manually identified images of true cleavages on the 5' strand in the goodUp subdir.
 * Collect manually identified images of true cleavages on the 3' strand in the goodDown subdir.
 * Collect manually identified images of false cleavages in the the bad subdir. 
 * __N.B.__ Ensure to get as great variation as possible among the images of each subdir.  
 ```
-modelData <- smartPARE_train(homePath1 = "example/",
+smartPAREdir <- system.file(package = "smartPARE")
+
+modelData <- smartPARE_train(homePath1 = paste0(smartPAREdir,"/example/"),
                              pixels1 = 28,
                              search_bound = list(denseLoop = c(0,4),  
                                                  epochs2 = c(100, 300),  
@@ -148,11 +164,11 @@ modelData <- smartPARE_train(homePath1 = "example/",
                                                  validation_split2 = c(0.1,0.4),  
                                                  convolutionalLoop = c(1,4),  
                                                  NO_pooling2 = c(1,2)),
-                             n_iter = 100)
+                             n_iter = 1)
 ```                             
 __Parameters:__
 
-`homePath1` Path to the root directory of the train directory metioned above.
+`homePath1` Path to the root directory of the train directory mentioned above.
 
 `pixels1` Number of pixels each each image will be converted to
 `search_bound` List of min and max values for the following variables: denseLoop2, epochs2, batch_size2, validation_split2, convolutionalLoop2 and NO_pooling2
@@ -172,7 +188,7 @@ __Output:__
 
 1. `$Pred` the inverted loss of the cross-validated data.  
 
-Each created model is witten into "homePath1/bayesmodels/", where a subdir ("pdf") with pdfs displaying the performance of each model also is found. The model names in the directory is based on the iteration order followed by then accuracy (0-1), then loss, then the value of each hyperparameter. This makes it possible to identify the performance and setting of the model even if the `modelData` info is lost.     
+Each created model is witten into _homePath1/bayesmodels/_ e.g `smartPAREdir/example/bayesmodels/`, where a subdir ("pdf") with pdfs displaying the performance of each model also is found. The model names in the directory is based on the iteration order followed by then accuracy (0-1), then loss, then the value of each hyperparameter. This makes it possible to identify the performance and setting of the model even if the `modelData` info is lost.     
 
 
 --------
@@ -185,11 +201,11 @@ Gather images that you want to evaluate in subdirs to your wd (homePath1) at a c
 Load the preferred model according to one of the following: 
  
 <ol type="a">
-  <li>If you designed your own model
+  <li>If you designed your own model based on the example images
   
-```model <- keras::load_model_hdf5("example/bayesmodels/modelNumberAndContinousName.h5")```</li>
-  <li>If you are using our model  
-```model <- keras::load_model_hdf5("data/model/CNNmodel.h5")```</li>
+```model <- keras::load_model_hdf5(paste0(smartPAREdir, "/example/bayesmodels/fillInModelName.h5"))```</li>
+  <li>If you are using our final model  
+```model <- keras::load_model_hdf5(paste0(smartPAREdir,"/model/CNNmodel.h5"))```</li>
 </ol>
 
 
@@ -198,24 +214,34 @@ View the loaded model
 `model %>% summary()` 
 ```
 
-Define the directories you want to examine  
-```extDirs <- unique(dirname(list.files(homePath1,rec=T)))```  
+Define the directories you want to examine
 
-Exclude the training dirs (if they are in the same path) 
 ```
-extDirs[-which(startsWith(prefix = "train",extDirs))]  
-extDirs <- extDirs[-which(startsWith(prefix = "train",extDirs))]  
-rootExt <- paste0(homePath1,extDirs)
+#E.g. choose to evaluate the example evaluation data   
+homePath1 <- paste0(smartPAREdir,"/example/")
+
+extDirs <- unique(dirname(list.files(homePath1,rec=T)))  
 ```
-Examine the cleavages images in rootExt dirs. `pixels` must be the same as when creating the model. Our model was based on 28 pixels.  
+
+Exclude the training dirs (or other dirs in the same path) 
+```
+if(any(which(startsWith(prefix = "train",extDirs))))
+extDirs <- extDirs[-which(startsWith(prefix = "train",extDirs))]
+if(any(which(startsWith(prefix = "bayesmodels",extDirs))))
+extDirs <- extDirs[-which(startsWith(prefix = "bayesmodels",extDirs))]
+if(any(which(startsWith(prefix = ".",extDirs))))
+  extDirs <- extDirs[-which(startsWith(prefix = ".",extDirs))]
+rootExt <- paste0(homePath1,extDirs)  
+```
+Examine the cleavage images in rootExt dirs. `pixels` must be the same as when creating the model. Our model was based on 28 pixels.  
 ```
 smartPARE_examineCleavages(examinePath = rootExt, model = model,pixels = 28) 
 ```
 
 
-Construct a list of the true cleavages, `recursionLevel` counts the homePath1 level as level 0. the first subdir level is level 1 etc. Example images are found in `example/evaluate_smart/".      
+Construct a list of the true cleavages of images in recursive subdirs to homePath1. Example images are once again found in `smartPAREdir/example/evaluate_smart/`.      
 ```
-smartPARE_ListTrue(pathToTrue = homePath1,recursionLevel = 0)  
+smartPARE_ListTrue(pathToTrue = homePath1)    
 ```
 
 __Output__
@@ -231,11 +257,11 @@ __Output__
 
 `trueCleavagesDf` contains the following four columns that can be used to filter out false cleavage sites in the dataset used for generating the cleavage images:
 
-* ds, (dataset) based on the name of the dir the cleavage images were stored in
-* posT, cleavage position in the transcript
-* ext, the extension of the cleavage images   
-* transcript, transcript ID    
+* ds - (dataset) based on the name of the dir the cleavage images were stored in
+* posT - cleavage position in the transcript
+* ext - the extension of the cleavage images
+* transcript - transcript ID    
 
 ```{r,echo = FALSE}
-knitr::kable(read.csv('../example/trueCleavagesDf.csv',sep =  " "), format = "simple")
+knitr::kable(read.csv('../inst/example/trueCleavagesDf.csv',sep =  " "), format = "simple")
 ```

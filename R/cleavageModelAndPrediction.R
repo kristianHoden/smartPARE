@@ -596,7 +596,7 @@ tuneCLR <- function(batch_size2 = 64,
     callbacks = list(callback_lr, callback_logger, callback_log_acc_lr),
     verbose = 2,
     validation_split=validation_split2)
-  
+
 
   plot(lr_hist,
        callback_log_acc_lr$acc,
@@ -619,7 +619,7 @@ tuneCLR <- function(batch_size2 = 64,
   threshold1 <- 3
   bottoms <- lapply(1:threshold1, function(x) inflect(accDf$acc, threshold = x)$minima)
   tops <- lapply(1:threshold1, function(x) inflect(accDf$acc, threshold = x)$maxima)
-  
+
   #2 - minima or maxima with threshold 2 is good
   bottoms1 <- bottoms[[2]]
   tops1 <- tops[[2]]
@@ -633,10 +633,10 @@ tuneCLR <- function(batch_size2 = 64,
       minMax[1,x] <- 1
     }
   }
-  
+
   for(x in(1:length(minMax[1,]))){
     if(is.na(minMax[2,x])){
-      minMax[2,x] <- length(accDf$acc)  
+      minMax[2,x] <- length(accDf$acc)
     }
   }
   # colSums(minMax)
@@ -723,10 +723,10 @@ runCLR <- function(optimizer2 = keras::optimizer_sgd(lr=lr_max1, decay=0),
                         gamma=1,
                         scale_fn=NULL,
                         scale_mode='cycle'){ # translated from python to R, original at: https://github.com/bckenstler/CLR/blob/master/clr_callback.py # This callback implements a cyclical learning rate policy (CLR). # The method cycles the learning rate between two boundaries with # some constant frequency, as detailed in this paper (https://arxiv.org/abs/1506.01186). # The amplitude of the cycle can be scaled on a per-iteration or per-cycle basis. # This class has three built-in policies, as put forth in the paper. # - "triangular": A basic triangular cycle w/ no amplitude scaling. # - "triangular2": A basic triangular cycle that scales initial amplitude by half each cycle. # - "exp_range": A cycle that scales initial amplitude by gamma**(cycle iterations) at each cycle iteration. # - "sinus": A sinusoidal form cycle # # Example # > clr <- Cyclic_LR(base_lr=0.001, max_lr=0.006, step_size=2000, mode='triangular', num_iterations=20000) # > plot(clr, cex=0.2)
-    
+
     # Class also supports custom scaling functions with function output max value of 1:
     # > clr_fn <- function(x) 1/x # > clr <- Cyclic_LR(base_lr=0.001, max_lr=0.006, step_size=400, # scale_fn=clr_fn, scale_mode='cycle', num_iterations=20000) # > plot(clr, cex=0.2)
-    
+
     # # Arguments
     #   iteration:
     #       if is a number:
@@ -758,7 +758,7 @@ runCLR <- function(optimizer2 = keras::optimizer_sgd(lr=lr_max1, decay=0),
     #       Defines whether scale_fn is evaluated on
     #       cycle number or cycle iterations (training
     #       iterations since start of cycle). Default is 'cycle'.
-    
+
     ########
     if(is.null(scale_fn)==TRUE){
       if(mode=='triangular'){scale_fn <- function(x) 1; scale_mode <- 'cycle';}
@@ -830,7 +830,6 @@ runCLR <- function(optimizer2 = keras::optimizer_sgd(lr=lr_max1, decay=0),
   dir.create(pathOut,showWarnings = F)
   dir.create(paste0(pathOut,"pdf/"),showWarnings = F)
 
-
   l_rate <- Cyclic_LR(iteration=1:n_iter, base_lr=Learning_rate_l2, max_lr=Learning_rate_h2, step_size=floor(n_iter/75),
                       mode='exp_range', gamma=0.99997, scale_fn=NULL, scale_mode='cycle')
   plot(l_rate, type="b", pch=16, xlab="iter", cex=0.2, ylab="learning rate", col="black")
@@ -867,12 +866,16 @@ runCLR <- function(optimizer2 = keras::optimizer_sgd(lr=lr_max1, decay=0),
 
   epoCount <- length(history$metrics$accuracy)
   rib(
-  model %>% keras::save_model_hdf5(paste0(pathOut,as.character(count1),"_va_", valAcc,
-                                   "_vl_", valLoss,
-                                   "_up_", denseLoop2,"_ep_", epoCount,
-                                   "_bz_", batch_size2,"_dr_", dropout2,
-                                   "_pa_", patience2,"_vs_", validation_split2,
-                                   "_fi_", convolutionalLoop2, "_po_", NO_pooling2, ".h5")
+  model %>% keras::save_model_hdf5(paste0(pathOut,as.character(count1),"_va_", round(valAcc,digits = 2),
+                                   "_vl_", round(valLoss,digits = 2),
+                                   "_up_", round(denseLoop2,digits = 2),
+                                   "_ep_", round(epoCount, digits = 2),
+                                   "_bz_", round(batch_size2, digits = 2),
+                                   "_dr_", round(dropout2, digits = 2),
+                                   "_pa_", round(patience2, digits = 2),
+                                   "_vs_", round(validation_split2,digits = 2),
+                                   "_fi_", round(convolutionalLoop2, digits = 2),
+                                   "_po_", round(NO_pooling2, digits = 2), ".h5")
   ))
 
 
@@ -917,14 +920,14 @@ runCLR <- function(optimizer2 = keras::optimizer_sgd(lr=lr_max1, decay=0),
 #'
 #' Searches for the true cleavages in dirs called true at the depth of recursion
 #' The list can be used to filer away false cleavages from the original dataset
-#' @param pathToTrue Path to where to recursively look for true cleavages (dirs called true) 
+#' @param pathToTrue Path to where to recursively look for true cleavages (dirs called true)
 #' @param recursionLevel Depth of recursion where the true dirs should be found at
 #' @keywords smartPARE_ListTrue
 #' @export
 #' @examples
 #' smartPARE_ListTrue(pathToTrue = "keras/3categories/",
 #' recursionLevel = 3 )
-smartPARE_ListTrue <- function(pathToTrue = "data/example/", recursionLevel = 0 ){
+smartPARE_ListTrue <- function(pathToTrue = "data/example/", recursionLevel = 2 ){
   ###########################Explanation#####################
   #Function used to gather info about what pictures are true hits
   findNthCharFromEnd <- function(pattern,string,n){
@@ -939,9 +942,12 @@ smartPARE_ListTrue <- function(pathToTrue = "data/example/", recursionLevel = 0 
   fileToTrue <- gsub(pattern = "/", replacement = "_", x = nam)
   inPotFiles <- list.files(pathToTrue,recursive = T)
   inPotFilesT <- inPotFiles[grep(x = inPotFiles, pattern = "true")]
-  resultDir <- paste0(pathToTrue,fileToTrue,"results/")
+  fileRes <- paste0(fileToTrue,"results/")
+  resultDir <- paste0(pathToTrue,fileRes)
   dir.create(resultDir)
-  write(x = inPotFilesT, file = paste0(resultDir,"true.txt"), sep = "\t" , append = T)#, row.names = F, col.names = F)
+  if(any(startsWith(inPotFilesT,prefix =  fileRes))) inPotFilesT <- inPotFilesT[-which(startsWith(inPotFilesT,prefix =  fileRes))]
+  if(any(startsWith(inPotFilesT,prefix =  "trueCleavagesDf"))) inPotFilesT <- inPotFilesT[-which(startsWith(inPotFilesT,prefix =  "trueCleavagesDf"))]
+  write(x = inPotFilesT, file = paste0(resultDir,"true.txt"), sep = "\t" , append = F)#, row.names = F, col.names = F)
 }
 
 #' Parses the smartPARE output file into a dataset
@@ -952,7 +958,7 @@ smartPARE_ListTrue <- function(pathToTrue = "data/example/", recursionLevel = 0 
 #' @export
 #' @examples
 #' smartPARE_parse(smartPAREresultFile = paste0(homePath1,"example_results/true.txt"))
-#' 
+#'
 smartPARE_parse <- function(smartPAREresultFile = paste0(homePath1,"example_results/true.txt")){
   truePath <- readLines(con = smartPAREresultFile)
   #splits str in pieces
@@ -964,7 +970,7 @@ smartPARE_parse <- function(smartPAREresultFile = paste0(homePath1,"example_resu
   upperPath2 <- length(gregexpr(upperPath[1],pattern = "/")[[1]])
   dsName <- stringr::str_split_fixed(trueCleavagesDf[,undrLines-2], "/", upperPath2)
   dsName2 <- dsName[upperPath2]
-  trueCleavagesDf2 <- data.frame(cbind(dsName2, 
+  trueCleavagesDf2 <- data.frame(cbind(dsName2,
                                        trueCleavagesDf[,c(3,4)],
                                        transc2),
                                  stringsAsFactors = F)
@@ -972,89 +978,103 @@ smartPARE_parse <- function(smartPAREresultFile = paste0(homePath1,"example_resu
   return(trueCleavagesDf2)
 }
 
-#' Train the smartPARE CNN model 
+#' Train the smartPARE CNN model
 #'
-#' 
+#'
 #' Build the CNN model based on directories with cleavage images; train/goodUp (true cleavages on 5' strand), train/goodDown (true cleavages on 3' strand) and train/bad (false cleavages)
 #' @param homePath1 Path to directory containing a directory with the following subdirs train/goodUp (true cleavages on 5' strand), train/goodDown (true cleavages on 3' strand) and train/bad (false cleavages)
 #' @param pixels1 Number of pixels to convert each image to
-#' @param search_bound List of min and max values for the following variables: denseLoop2, epochs2, batch_size2, validation_split2, convolutionalLoop2 and NO_pooling2 
-#' @param n_iter Number of iterations to run the Bayesian optimization  
+#' @param search_bound List of min and max values for the following variables: denseLoop2, epochs2, batch_size2, validation_split2, convolutionalLoop2 and NO_pooling2
+#' @param n_iter Number of iterations to run the Bayesian optimization
 #' @keywords smartPARE_train
 #' @export
 #' @examples
 #' smartPARE_train(homePath1 = "example/",
 #' pixels1 = 28,
-#' search_bound = list(denseLoop2 = c(0,4),  
-#'                     epochs2 = c(100, 300),  
-#'                     batch_size2 = c(32,128),  
-#'                   dropout2 = c(0, 0.3),  
-#'                     validation_split2 = c(0.1,0.4),  
-#'                  convolutionalLoop2 = c(1,4),  
-#'                  NO_pooling2 = c(1,2)  
+#' search_bound = list(denseLoop2 = c(0,4),
+#'                     epochs2 = c(100, 300),
+#'                     batch_size2 = c(32,128),
+#'                   dropout2 = c(0, 0.3),
+#'                     validation_split2 = c(0.1,0.4),
+#'                  convolutionalLoop2 = c(1,4),
+#'                  NO_pooling2 = c(1,2)
 #' ),
 #' n_iter = 100)
-smartPARE_train <- function(homePath1 = "example/",
+smartPARE_train <- function(homePath1 = paste0(system.file("example/",package = "smartPARE"),"/"),
                             pixels1 = 28,
-                            search_bound = list(denseLoop2 = c(0,4),  
-                                                epochs2 = c(100, 300),  
-                                                batch_size2 = c(32,128),  
-                                                dropout2 = c(0, 0.3),  
-                                                validation_split2 = c(0.1,0.4),  
-                                                convolutionalLoop2 = c(1,4),  
-                                                NO_pooling2 = c(1,2)  
+                            search_bound = list(denseLoop2 = c(0,4),
+                                                epochs2 = c(100, 300),
+                                                batch_size2 = c(32,128),
+                                                dropout2 = c(0, 0.3),
+                                                validation_split2 = c(0.1,0.4),
+                                                convolutionalLoop2 = c(1,4),
+                                                NO_pooling2 = c(1,2)
                             ),
                             n_iter = 100){
+  getStartVals <- function(search_grid1 = search_grid[,4]){
+    digits <- function(x) nchar( trunc( abs(x) ) )
+    has.decimal <- function(x) return(grepl("[\\.][[:digit:]]",x))
+
+
+    range1 <- as.numeric(unlist(search_grid1))
+    if(!any(has.decimal(range1))){
+      startVals <- sort(sample(seq(range1[1],range1[2]), 2,replace = F))
+    }else{
+      nDigits <- digits(range1[1])
+      startVals <- sort(round(runif(min = range1[1], max = range1[2], n = 2 ), digits = nDigits+1))
+    }
+    return(startVals)
+  }
   as.numeric.if.possible <- function(potentialNumber){
-    if(!is.na(suppressWarnings(as.numeric(potentialNumber)))) return(as.numeric(potentialNumber)) 
+    if(!is.na(suppressWarnings(as.numeric(potentialNumber)))) return(as.numeric(potentialNumber))
     else return(potentialNumber)
   }
-  #1  
-  #Create the training dataset  
-  kerasCreateDataset_2d(homePath = homePath1 ,pixels = pixels1)  
-  #2  
-  
-  #Tune the cyclical learning rate  
+  #1
+  #Create the training dataset
+  kerasCreateDataset_2d(homePath = homePath1 ,pixels = pixels1)
+  #2
+
+  #Tune the cyclical learning rate
   lr_max1 <- 0.1
-  tuneCLR(batch_size2 = 64,  
-          epochs_find_LR = 20,  
-          lr_max = lr_max1,  
-          optimizer2 = keras::optimizer_sgd(lr=lr_max1, decay=0), #optimizer_rmsprop(lr=lr_max, decay=0),  
-          validation_split2 = 0.2,  
-          rollmeanSplit = 3  
-  )  
-  
-  #3  
-  #Double check the assignment of the Learning_rates  
-  #If you need to change the Learning_rate_l or Learning_rate_h manually  
-  #The algorithm is a bit shaky for non-smooth curves  
-  #Learning_rate_l should be at minimum of the curve and Learning_rate_h at max  
-  #Learning_rate_l = 5e-04 #1e-02  
-  #Learning_rate_h = 1*10^-3  
-  
-  
-  rm1 <- 4  
+  tuneCLR(batch_size2 = 64,
+          epochs_find_LR = 20,
+          lr_max = lr_max1,
+          optimizer2 = keras::optimizer_sgd(lr=lr_max1, decay=0), #optimizer_rmsprop(lr=lr_max, decay=0),
+          validation_split2 = 0.2,
+          rollmeanSplit = 3
+  )
+
+  #3
+  #Double check the assignment of the Learning_rates
+  #If you need to change the Learning_rate_l or Learning_rate_h manually
+  #The algorithm is a bit shaky for non-smooth curves
+  #Learning_rate_l should be at minimum of the curve and Learning_rate_h at max
+  #Learning_rate_l = 5e-04 #1e-02
+  #Learning_rate_h = 1*10^-3
+
+
+  rm1 <- 4
   lrl <- "start"
   lrh <- "start"
-  
+
   while(lrl == "replot" | lrh == "replot" | lrl == "start" | lrh == "start" ){
-    plot(zoo::rollmean(accDforig$lr, rm1),  
-         zoo::rollmean(accDforig$acc, rm1),  
-         log="x", type="l", pch=16, cex=0.3,  
-         xlab="learning rate", ylab="accuracy: rollmean(100)")  
-    abline(v=Learning_rate_l, col="blue")  
-    abline(v=Learning_rate_h, col="red")  
-    
+    plot(zoo::rollmean(accDforig$lr, rm1),
+         zoo::rollmean(accDforig$acc, rm1),
+         log="x", type="l", pch=16, cex=0.3,
+         xlab="learning rate", ylab="accuracy: rollmean(100)")
+    abline(v=Learning_rate_l, col="blue")
+    abline(v=Learning_rate_h, col="red")
+
     print("Lower learning rate should be assigned the bottom value of the slope" )
     print("Higher learning rate should be assigned the top value of the slope" )
     print("A rollmean function smoothens out the slope,")
     print("a greater rollmean width -> a smoother slope (default=4)")
     print("replot to change rollmean width")
-    
+
     print(paste0("The lower learning rate is automatically assigned ",Learning_rate_l))
     lrl <- readline("Are you fine with that? (y/numeric replacement/replot) ")
     lrl <- as.numeric.if.possible(lrl)
-    
+
     if(tolower(lrl) == "replot"){
       rm1 <- NA
       while(is.na(rm1)){
@@ -1062,7 +1082,7 @@ smartPARE_train <- function(homePath1 = "example/",
       }
       next
     }
-    if(!any(lrl == "replot" | lrl == "y" | lrl == "" | 
+    if(!any(lrl == "replot" | lrl == "y" | lrl == "" |
             is.numeric(lrl))
     ){
       print(paste0("You asigned lrl ", lrl, " only  y/numeric/replot are ok"))
@@ -1070,7 +1090,7 @@ smartPARE_train <- function(homePath1 = "example/",
       cat("n/")
       next
     }
-    
+
     print(paste0("The higher learning rate is automatically assigned ",Learning_rate_h))
     lrh <- readline("Are you fine with that? (y/Numeric replacement/replot) ")
     lrh <- as.numeric.if.possible(lrh)
@@ -1081,43 +1101,46 @@ smartPARE_train <- function(homePath1 = "example/",
       }
       next
     }
-    
+
     if(!any(lrh == "replot" | lrh == "y" | lrh == "" | is.numeric(lrh))){
       print(paste0("You asigned lrh ", lrh, " only  y/numeric/replot are ok"))
       lrh <- "replot"
       cat("n/")
       next
     }
-    
+
   }
-  if(is.numeric(lrl)) Learning_rate_l <- lrl  
+  if(is.numeric(lrl)) Learning_rate_l <- lrl
   if(is.numeric(lrh)) Learning_rate_h <- lrh
-  
+
   #4
-  #automatic generation of start grid 
+  #automatic generation of start grid
   search_grid <- lapply(search_bound,getStartVals)
-  
-  #5  
-  #Initiate the model counting, it is run in the global environment  
-  #and run the Bayesian optimization  
-  #Makes sure to set the other standards of the input variables of your  
-  #choice in the function defitition of runCLR  
-  #for instance the pathOut - dir of your output  
-  count1 <-1  
-  bayes_ucb <-  
-    rBayesianOptimization::BayesianOptimization(FUN = runCLR,   
-                                                bounds = search_bound,   
-                                                init_grid_dt = search_grid,   
-                                                init_points = 0,  
-                                                n_iter = n_iter,  
-                                                acq =  "ucb" #"ei" "ucb"  
-    )  
-  
-  #6  
-  #Check which model you prefer  
-  order(bayes_ucb$Pred, decreasing = T)  
-  bayes_ucb[which(bayes_ucb$Pred == max(bayes_ucb$Pred))]  
-  1/max(bayes_ucb$Pred)  
+
+  #5
+  #Initiate the model counting, it is run in the global environment
+  #and run the Bayesian optimization
+  #Makes sure to set the other standards of the input variables of your
+  #choice in the function defitition of runCLR
+  #for instance the pathOut - dir of your output
+  count1 <-1
+  assign("homePath1", homePath1, envir = .GlobalEnv)
+  assign("lr_max1", lr_max1, envir = .GlobalEnv)
+  assign("count1", count1, envir = .GlobalEnv)
+  bayes_ucb <-
+    rBayesianOptimization::BayesianOptimization(FUN = runCLR,
+                                                bounds = search_bound,
+                                                init_grid_dt = search_grid,
+                                                init_points = 0,
+                                                n_iter = n_iter,
+                                                acq =  "ucb" #"ei" "ucb"
+    )
+
+  #6
+  #Check which model you prefer
+  order(bayes_ucb$Pred, decreasing = T)
+  bayes_ucb[which(bayes_ucb$Pred == max(bayes_ucb$Pred))]
+  1/max(bayes_ucb$Pred)
   return(bayes_ucb)
 }
 
