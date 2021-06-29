@@ -111,12 +111,10 @@ aliFilesPath = "path/bamTranscriptome/",
 aliFilesPattern1 = "pattern1.sorted.bam$",
 aliFilesPattern2 = "pattern2.sorted.bam$",
 ylim1 = 5,
-edgesExtend1 = c(1,21),
-gffTrans = gffTrans)
+edgesExtend1 = c(1,21))
 ```
 __Parameters:__
 
-`gffTrans` - a dataframe of your imported gff with V10 = transcript ID. See for example extendGffTrans for example
 
 `aliFilesPattern1` - regular expression defining the pattern of the first degradome bam file
 
@@ -233,7 +231,7 @@ if(any(which(startsWith(prefix = ".",extDirs))))
   extDirs <- extDirs[-which(startsWith(prefix = ".",extDirs))]
 rootExt <- paste0(homePath1,extDirs)  
 ```
-Examine the cleavage images in rootExt dirs. `pixels` must be the same as when creating the model. Our model was based on 28 pixels.  
+Examine the cleavage images in rootExt dirs. `examinePath` should only contain other folders (no loose files). `pixels` must be the same as when creating the model. Our model was based on 28 pixels.  
 ```
 smartPARE_examineCleavages(examinePath = rootExt, model = model,pixels = 28) 
 ```

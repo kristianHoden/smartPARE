@@ -47,6 +47,50 @@
 #' edgesExtend1 = c(1,21),
 #' gffTrans = gffTrans
 #' )
+#' 
+
+
+
+phaseTankClustInGene <- function(phaseTankClustall2 = phaseTankClustall ){
+  library(stringr)
+  # PhaseTankStPred <- read.table("/home/kristianh/ek/Projects/PiAgo1/aditionalFasta/Phasetank/2020/StInfMirbase21/scripts/OUTPUT_2018.12.06_07.54/PhasiRNA_2018.12.06_07.54OUTPUT_2018.12.06_07.54/")
+  #colnames(PhaseTankStPred) <- unlist(readHeading(path = paste0(desktop,"/home/kristianh/ek/Projects/PiAgo1/scripts/OUTPUT_2018.12.06_07.54/Pred_tab_2018.12.06_07.54")))
+  
+  startPhas <- sapply(strsplit(as.character(phaseTankClustall2$`Beg:End`), ":"),"[")[1,]
+  if(any(duplicated(startPhas))){
+    phaseTankClustall2 <- phaseTankClustall2[-which(duplicated(startPhas)),]
+  }
+  warning("might remove mirnas")
+  nrow(phaseTankClustall2)
+  startPhas <- startPhas[-duplicated(startPhas)]
+  
+  chrPhas <- substring(sapply(strsplit(as.character(phaseTankClustall2$ID), "_"),"[")[1,],4)
+  startPhas <- sapply(strsplit(as.character(phaseTankClustall2$`Beg:End`), ":"),"[")[1,]
+  endPhas <- sapply(strsplit(as.character(phaseTankClustall2$`Beg:End`), ":"),"[")[2,]
+  signPhas <- endPhas > startPhas 
+  signPhas <- gsub(x = signPhas, pattern = "TRUE", replacement = "+")
+  signPhas <- gsub(x = signPhas, pattern = "FALSE", replacement = "-")
+  
+  startPhas
+  
+  chromsInc <- unique(chrPhas)
+  lenVecComb <- c()
+  for (x in seq_along(unique(chrPhas))){
+    gffPot2Chrom <- gffPot2[gffPot2$V1 == chromsInc[x],] 
+    startPhasChrom <- startPhas[chrPhas == chromsInc[x]]
+    gffPot2ChromMrna <- gffPot2Chrom[gffPot2Chrom$V3 == "mRNA",] 
+    
+    mrnaPhas <- sapply(as.numeric(startPhasChrom), function(y){
+      which(data.table::between(y,lower = gffPot2ChromMrna$V4, upper = gffPot2ChromMrna$V5))
+    }
+    )
+    lenVec <- sapply(mrnaPhas, length)
+    lenVecComb <- c(lenVecComb,lenVec)
+  }
+  return(lenVecComb)
+}
+
+
 smartPARE_cleavageWindows <- function(dirO = paste0("pathOut/"),
                             cleavageData = cleavageDataDataset,
                             aliFilesPath = "path/bamTranscriptome/",
@@ -56,12 +100,17 @@ smartPARE_cleavageWindows <- function(dirO = paste0("pathOut/"),
                             addToDir = T,
                             onlyOneTest = F,
                             edgesExtend1 = c(1,21),
-                            gffTrans = gffTrans,
                             savePics = T,
                             jpegWidHei = c(480,480),
                             qual = 75,
                             pz = 12
 ){
+  printP <- function(...){
+    ###########################Explanation#####################
+    #Function used to paste and print strings
+    
+    print(paste(...))
+  }
   transAndPosToBam <- function(
     transAndPos = data.frame(genesT="PGSC0003DMT400019853", posT=974),
     edgesExtend1 = 100,
@@ -69,9 +118,8 @@ smartPARE_cleavageWindows <- function(dirO = paste0("pathOut/"),
     aliFilesPath = "bamTranscript/",
     aliFilesPatternCtrl1 = "",
     individual = T,
-    ylim1 = 5,
-    gffTrans
-  ){
+    ylim1 = 5){
+   
     readDepthBam <- function(posT,
                              aliFilesPath = "/home/kristianh/p/Degradome/analysis/bamPot/",
                              aliFilesPattern = "B_GF(.*?).sorted.bam$",
@@ -89,6 +137,12 @@ smartPARE_cleavageWindows <- function(dirO = paste0("pathOut/"),
       #par(mfrow=c(2,2), mar=c(0,0,0,0))
       facToNum <-function(fac){
         return(as.numeric(as.character(fac)))
+      }
+      if(aliFilesPath == ""){
+        empt <- readline("Do you mean your wd path? (y/n)")
+        if(empt == "y"){
+          aliFilesPath <- getwd()
+        }
       }
 
       aliFilesPath2 <- list.files(path = aliFilesPath,pattern = aliFilesPattern,full.names = T)
@@ -139,18 +193,23 @@ smartPARE_cleavageWindows <- function(dirO = paste0("pathOut/"),
 
         mygene.reads <- GenomicAlignments::readGAlignments(file=aliFile,
                                                            param=Rsamtools::ScanBamParam(which=mygene,
-                                                                                         what=c("seq","mapq","flag","qual","isize")
+                                                                                         what=c("seq","mapq","flag","qual","isize","strand")
                                                            )
         )
-
-        mygene.readsP <- mygene.reads[which(strand(mygene.reads) == "+")]
-        mygene.readsM <- mygene.reads[which(strand(mygene.reads) == "-")]
+    
+        
+        strandInfo <- mygene.reads@elementMetadata@listData$strand
+        mygene.readsP <- mygene.reads[which(!is.na(match(strandInfo, c("+","*")) )),]
+        mygene.readsM <- mygene.reads[which(!is.na(match(strandInfo, c("-","*")) )),]
+        # mygene.readsM <- mygene.reads[which((BiocGenerics::strand(mygene.reads) == "-")@values)]
+        # mygene.readsP <- mygene.reads[which((BiocGenerics::strand(mygene.reads[,"strand"]) == "+")@values)]
+        # mygene.readsM <- mygene.reads[which((BiocGenerics::strand(mygene.reads) == "-")@values)]
 
         covP <- IRanges::coverage(mygene.readsP)
-        numP <- as.numeric(covP[[chr1]][ranges(z1)])
+        numP <- as.numeric(covP[[chr1]][IRanges::ranges(z1)])
 
         covM <- IRanges::coverage(mygene.readsM)
-        numM <- as.numeric(covM[[chr1]][ranges(z2)])
+        numM <- as.numeric(covM[[chr1]][IRanges::ranges(z2)])
 
         lim1 <- max(numM,numP)
         if(lim1 < ylim1){
@@ -394,8 +453,7 @@ smartPARE_cleavageWindows <- function(dirO = paste0("pathOut/"),
                      aliFilesPath = aliFilesPath,
                      aliFilesPatternCtrl1 = "",
                      individual = T,
-                     ylim1 = ylim1,
-                     gffTrans = gffTrans
+                     ylim1 = ylim1
     )
     if(savePics == T){
       dev.off()
@@ -408,8 +466,7 @@ smartPARE_cleavageWindows <- function(dirO = paste0("pathOut/"),
                      aliFilesPath = aliFilesPath,
                      aliFilesPatternCtrl1 = "",
                      individual = T,
-                     ylim1 = ylim1,
-                     gffTrans = gffTrans
+                     ylim1 = ylim1
     )
     if(savePics == T){
       dev.off()
